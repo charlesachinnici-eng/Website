@@ -6,12 +6,13 @@
     --secondary-color: #A6653F;
     --secondary-dark-color: #F2C299;
     --font-family: 'Georgia', sans-serif;
-    --font-size: 16px;
+    --font-size: 16;
     --spacing-unit: 8px;
     --width-boxes: 95%;
     --opacity-level: 0.75;
     width: 100%;
     height: auto;
+    font-size: var(--font-size);
 }
 
 header {text-align: center;
@@ -66,12 +67,13 @@ footer {text-align: center;
 .button {
     display: inline-block;
     padding: 10px 20px;
-    font-size: 24px;
+    font-size: 1.5rem;
     color: var(--primary-color);
     background-color: var(--accent-color);
     border: none;
     border-radius: 12px;
     text-decoration: none;
+    text-align: center;
     margin: 5px;
     width: 20%
 }
