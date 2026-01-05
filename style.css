@@ -6,8 +6,8 @@
     --secondary-color: #A6653F;
     --secondary-dark-color: #F2C299;
     --font-family: 'Georgia', sans-serif;
-    --font-size: 16;
-    --spacing-unit: 8px;
+    --font-size: 16px;
+    --spacing-unit: .5rem;
     --width-boxes: 95%;
     --opacity-level: 0.75;
     width: 100%;
@@ -66,15 +66,15 @@ footer {text-align: center;
 }
 .button {
     display: inline-block;
-    padding: 10px 20px;
+    padding: 1rem 1rem;
     font-size: 1.5rem;
     color: var(--primary-color);
     background-color: var(--accent-color);
     border: none;
-    border-radius: 12px;
+    border-radius: 1rem;
     text-decoration: none;
     text-align: center;
-    margin: 5px;
+    margin: .25rem;
     width: 20%
 }
 .button:hover {
@@ -83,9 +83,8 @@ footer {text-align: center;
 }
 
 @media only screen 
-  and (width: 500px) 
-  and (height: 1000px) 
-  and (-webkit-device-pixel-ratio: 3) {
+  and (width: 475px) 
+  and (height: 900px) {
     body {
         background-image: url(Mobile_background_image.jpg);
     }
