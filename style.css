@@ -13,10 +13,10 @@
     width: 100%;
     height: auto;
     font-size: var(--font-size);
+    text-align: center;
 }
 
-header {text-align: center;
-    font-family: var(--font-family);
+header {font-family: var(--font-family);
     background-color: var(--primary-dark-color);
     color: var(--primary-color);
     padding: var(--spacing-unit);
@@ -24,16 +24,13 @@ header {text-align: center;
     margin-right: auto;
     width: var(--width-boxes);
 }
-h1 {text-align: center;
-    font-size: var(--font-size * 3);
+h1 {font-size: var(--font-size * 3);
     color: var(--primary-color);
 }
-h2 {text-align: center;
-    color: var(--primary-color);
+h2 {color: var(--primary-color);
     padding: var(--spacing-unit);
 }
-body {text-align: center;
-    font-family: var(--font-family);
+body {font-family: var(--font-family);
     background-color: var(--primary-color);
     color: var(--primary-dark-color);
     margin: var(--spacing-unit);
@@ -43,7 +40,7 @@ body {text-align: center;
     margin-right: auto;
     width: var(--width-boxes);
 
-    display: flex;
+    display: flex; /*Need to complete the flex-grid:  five columns need to be identified as classes in the HTML file*/
     flex-direction: column;
     align-items: center;
 
@@ -55,8 +52,7 @@ body {text-align: center;
     background-position: center; /* Centers the image */
     background-attachment: fixed; /* Keeps the image fixed when scrolling */
 }
-footer {text-align: center;
-    font-family: var(--font-family);
+footer {font-family: var(--font-family);
     background-color: var(--primary-dark-color);
     color: var(--primary-color);
     padding: var(--spacing-unit);
@@ -67,13 +63,12 @@ footer {text-align: center;
 .button {
     display: inline-block;
     padding: 1rem 1rem;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     color: var(--primary-color);
     background-color: var(--accent-color);
     border: none;
     border-radius: 1rem;
     text-decoration: none;
-    text-align: center;
     margin: .25rem;
     width: 20%
 }
