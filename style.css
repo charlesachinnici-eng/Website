@@ -10,8 +10,8 @@
     --spacing-unit: .5rem;
     --width-boxes: 95%;
     --opacity-level: 0.75;
-    width: 100%;
-    height: auto;
+    width: 100vw;
+    height: 100vh;
     font-size: var(--font-size);
     text-align: center;
 }
