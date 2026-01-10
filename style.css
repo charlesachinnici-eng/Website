@@ -77,10 +77,10 @@ footer {font-family: var(--font-family);
     opacity: 1.0;
 }
 
-@media only screen 
+/*@media only screen 
   and (width: 475px) 
   and (height: 900px) {
     body {
         background-image: url(Mobile_background_image.jpg);
     }
-}
+}*/
