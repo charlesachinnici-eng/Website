@@ -6,7 +6,7 @@
     --secondary-color: #A6653F;
     --secondary-dark-color: #F2C299;
     --font-family: 'Georgia', sans-serif;
-    --font-size: 1.67vh;
+    --font-size: 1.5vh;
     --font-size-large: 2rem;
     --font-size-title: 2.5rem;
     --font-size-button: 1.25rem;
@@ -17,7 +17,7 @@
 
 html, body {
     width: 100vw;
-    height: 100vh;
+    height: 90vh;
     overflow: hidden;
     font-size: var(--font-size);
     text-align: center;
