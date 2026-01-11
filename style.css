@@ -7,16 +7,20 @@
     --secondary-dark-color: #F2C299;
     --font-family: 'Georgia', sans-serif;
     --font-size: 1.67vh;
-    --font-size-large: 3rem;
-    --font-size-title: 4rem;
+    --font-size-large: 2rem;
+    --font-size-title: 3rem;
     --font-size-button: 1.25rem;
     --spacing-unit: .5rem;
     --width-boxes: 95%;
     --opacity-level: 0.75;
-    max-width: 100vw;
-    max-height: 100vh;
     font-size: var(--font-size);
     text-align: center;
+}
+
+html, body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
 }
 .return-home {
     font-family: var(--font-family);
