@@ -13,14 +13,14 @@
     --spacing-unit: .5rem;
     --width-boxes: 95%;
     --opacity-level: 0.75;
-    font-size: var(--font-size);
-    text-align: center;
 }
 
 html, body {
     width: 100vw;
     height: 100vh;
     overflow: hidden;
+    font-size: var(--font-size);
+    text-align: center;
 }
 .return-home {
     font-family: var(--font-family);
