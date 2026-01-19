@@ -12,9 +12,9 @@
     --font-size-button: 1.25rem;
     --spacing-unit: .5rem;
     --width-boxes: 95%;
-    --opacity-level: 0.75;
+    --opacity-level: 0.80;
+    --button-opacity-level: 1.0;
 }
-
 html, body {
     width: 100vw;
     height: 100vh;
@@ -40,17 +40,17 @@ header {font-family: var(--font-family);
     padding: var(--spacing-unit);
     margin-left: auto;
     margin-right: auto;
+    margin-bottom: var(--spacing-unit);
     width: var(--width-boxes);
+    border-radius: 1rem;
 }
-
 .grid-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1em;
+    gap: 1em 2em;
     justify-items: center;
-    margin-top: var(--spacing-unit);
+    margin-top: var(--spacing-unit * .9);
 }
-
 h1 {font-size: var(--font-size-large);
     color: var(--primary-color);
 }
@@ -66,11 +66,9 @@ body {font-family: var(--font-family);
     margin-left: auto;
     margin-right: auto;
     width: var(--width-boxes);
-
     display: flex; /*Need to complete the flex-grid:  five columns need to be identified as classes in the HTML file*/
     flex-direction: column;
     align-items: center;
-
     background-image: url(Background_image.jpg); 
     -webkit-backdrop-filter: blur(10px); /* Applies a blur effect to the background image on some systems*/
     backdrop-filter: blur(10px); /* Applies a blur effect to the background image on other systems*/
@@ -83,9 +81,11 @@ footer {font-family: var(--font-family);
     background-color: var(--primary-dark-color);
     color: var(--primary-color);
     padding: var(--spacing-unit);
+    margin-top: var(--spacing-unit);
     margin-left: auto;
     margin-right: auto;
     width: var(--width-boxes);
+    border-radius: 1rem;
 }
 .button1 , .button2, .button3, .button4, .button5, .button6 {
     padding: 1rem 1rem;
@@ -94,6 +94,7 @@ footer {font-family: var(--font-family);
     border: var(--accent-color) solid 2px;
     background-color: var(--accent-color);
     border-radius: 1rem;
+    opacity: var(--button-opacity-level);
     text-decoration: none;
     margin: .25rem;
     width: 85%
