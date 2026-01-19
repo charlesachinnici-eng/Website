@@ -17,7 +17,7 @@
 }
 html, body {
     width: 100vw;
-    height: 90vh;
+    height: 80vh;
     overflow: hidden;
     font-size: var(--font-size);
     text-align: center;
@@ -115,6 +115,7 @@ footer {font-family: var(--font-family);
     height: 100vh;
     display: grid;
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: 4.25em 4.25em 4.25em;
     gap: 1em 2em;
     justify-items: center;
     margin-top: var(--spacing-unit * .9);
