@@ -53,6 +53,12 @@ header {font-family: var(--font-family);
 .grid-container {
     display: grid;
     gap: 1em 2em;
+    grid-template-areas: "button1 button1"
+                        "button2 button2"
+                        "button3 button3"
+                        "button4 button4"
+                        "button5 button5"
+                        "button6 button6";
     justify-items: center;
     justify-content: center;
     margin-top: var(--spacing-unit * .9);
@@ -116,7 +122,7 @@ footer {font-family: var(--font-family);
     justify-content: center;
     justify-items: center;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: repeat(6, 4.25em);
+    grid-auto-rows: 4.25em 4.25em;
     gap: 1em 2em;
     justify-items: center;
     margin-top: var(--spacing-unit * .9);
