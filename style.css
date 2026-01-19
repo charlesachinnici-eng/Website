@@ -54,6 +54,7 @@ header {font-family: var(--font-family);
     display: grid;
     gap: 1em 2em;
     justify-items: center;
+    justify-content: center;
     margin-top: var(--spacing-unit * .9);
 }
 h1 {font-size: var(--font-size-large);
@@ -71,8 +72,6 @@ body {font-family: var(--font-family);
     margin-left: auto;
     margin-right: auto;
     width: var(--width-boxes);
-    display: flex; /*Need to complete the flex-grid:  five columns need to be identified as classes in the HTML file*/
-    flex-direction: column;
     align-items: center;
     background-image: url(Background_image.jpg); 
     -webkit-backdrop-filter: blur(10px); /* Applies a blur effect to the background image on some systems*/
@@ -114,8 +113,10 @@ footer {font-family: var(--font-family);
     .grid-container {
     height: 100vh;
     display: grid;
+    justify-content: center;
+    justify-items: center;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 4.25em 4.25em 4.25em;
+    grid-template-rows: repeat(6, 4.25em);
     gap: 1em 2em;
     justify-items: center;
     margin-top: var(--spacing-unit * .9);
