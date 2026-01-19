@@ -34,6 +34,12 @@ html, body {
     color: var(--primary-color);
     text-decoration: none;
 }
+.phone-number {
+    font-family: var(--font-family);
+    font-size: var(--font-size-large);
+    color: var(--primary-color);
+    text-decoration: none;
+}
 header {font-family: var(--font-family);
     background-color: var(--primary-dark-color);
     color: var(--primary-color);
