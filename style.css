@@ -46,7 +46,6 @@ header {font-family: var(--font-family);
 }
 .grid-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
     gap: 1em 2em;
     justify-items: center;
     margin-top: var(--spacing-unit * .9);
@@ -104,4 +103,13 @@ footer {font-family: var(--font-family);
     border: white solid 2px;
     opacity: 1.0;
     cursor: pointer;
+}
+@media (min-width: 450px) {
+    .grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1em 2em;
+    justify-items: center;
+    margin-top: var(--spacing-unit * .9);
+}
 }
