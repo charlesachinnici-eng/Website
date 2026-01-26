@@ -15,10 +15,13 @@
     --opacity-level: 0.80;
     --button-opacity-level: 1.0;
 }
-html, body {
-    width: 100vw;
-    height: 80vh;
+html {
+    height: 100vh;
     overflow: hidden;
+}
+body {
+    height: 100vh;
+    overflow: scroll;
     font-size: var(--font-size);
     text-align: center;
 }
@@ -50,20 +53,22 @@ header {font-family: var(--font-family);
     width: var(--width-boxes);
     border-radius: 1rem;
 }
+@media (max-width: 450px) {/* This is for small screens like phones */
 .grid-container {
     display: grid;
     gap: 1em 2em;
- /*   grid-template-columns: 1fr 1fr; - If we just have one column, we don't need this
-    grid-template-rows: 4.25em 4.25em 4.25em;
-    grid-template-areas: "button1 button1"
-                        "button2 button2"
-                        "button3 button3"
-                        "button4 button4"
-                        "button5 button5"
-                        "button6 button6";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    grid-template-areas: "button1",
+                        "button2",
+                        "button3",
+                        "button4",
+                        "button5",
+                        "button6";
     justify-items: center;
-    justify-content: center; */
+    justify-content: center;
     margin-top: var(--spacing-unit * .9);
+}
 }
 h1 {font-size: var(--font-size-large);
     color: var(--primary-color);
@@ -119,13 +124,13 @@ footer {font-family: var(--font-family);
 }
 @media (min-width: 450px) {
     .grid-container {
-    height: 100vh;
     display: grid;
     justify-content: center;
     justify-items: center;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 4.25em 4.25em 4.25em;
-    grid-template-areas: "button1 button2"
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas: "button1 button1"
+                        "button2 button2"
                         "button3 button4"
                         "button5 button6";
     gap: 1em 2em;
