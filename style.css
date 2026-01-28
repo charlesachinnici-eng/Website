@@ -15,7 +15,6 @@
     --opacity-level: 0.80;
     --button-opacity-level: 1.0;
 }
-
 body {
     height: 100vh;
     overflow: scroll;
@@ -50,7 +49,7 @@ header {font-family: var(--font-family);
     width: var(--width-boxes);
     border-radius: 1rem;
 }
-/*@media (max-width: 450px) {/* This is for small screens like phones 
+/*@media (max-width: 450px) {/* This is for small screens, phones 
 .grid-container {
     display: grid;
     gap: 1em 2em;
@@ -120,18 +119,15 @@ footer {font-family: var(--font-family);
     opacity: 1.0;
     cursor: pointer;
 }
-@media (min-width: 50px) {
-    .grid-container {
+.grid-container {
     display: grid;
     justify-content: center;
     justify-items: center;
+    text-align: center;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto auto auto;
     grid-template-areas: "button1 button2"
                         "button3 button4"
                         "button5 button6";
     gap: 1em 2em;
-    justify-items: center;
-    margin-top: var(--spacing-unit * .9);
-}
 }
