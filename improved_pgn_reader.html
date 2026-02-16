@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enhanced PGN Reader with Chess Engine</title>
+<link href="https://fonts.googleapis.com/css?family=Bitter:100,200,300,400|Roboto:300,400,700|Merriweather:300,400,700" rel="stylesheet">
+<style type="text/css">
+:root {
+  --light-square: #f0d9b5;
+  --dark-square: #b58863;
+  --highlight-color: #ffff00;
+  --board-border: #333;
+  --move-panel-bg: #223554;
+  --move-panel-text: #ffffff;
+  --primary-font: 'Bitter', serif;
+  --board-font: 'Montserrat', sans-serif;
+}
+
+body {
+  font-family: var(--primary-font);
+  margin: 20px;
+  background: #f5f5f5;
+}
+
+#PgnViewerPlaceholder {
+  min-height: 650px;
+  width: 1200px;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Customization Panel */
+#CustomizationPanel {
+  background: #f8f9fa;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  border: 1px solid #dee2e6;
+}
+
+#CustomizationPanel h3 {
+  margin-top: 0;
+  color: #495057;
+  font-size: 16px;
+}
+
+.customize-section {
+  display: inline-block;
+  margin-right: 30px;
+  margin-bottom: 10px;
+  vertical-align: top;
+}
+
+.customize-section label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 13px;
+  color: #6c757d;
+}
+
+.customize-section input[type="color"] {
+  width: 60px;
+  height: 30px;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.customize-section select {
+  padding: 5px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  background: white;
+  font-family: var(--primary-font);
+}
+
+/* Chess Engine Panel */
+#EnginePanel {
+  background: #e9ecef;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  border: 1px solid #dee2e6;
+}
+
+#EnginePanel h3 {
+  margin-top: 0;
+  color: #495057;
+  font-size: 16px;
+}
+
+#EngineControls {
+  margin-bottom: 10px;
+}
+
+#EngineControls button {
+  padding: 8px 16px;
+  margin-right: 10px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--primary-font);
+  font-size: 13px;
+}
+
+#EngineControls button:hover {
+  background: #0056b3;
+}
+
+#EngineControls button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+#EngineOutput {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 10px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  min-height: 100px;
+  max-height: 150px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+.engine-line {
+  margin: 2px 0;
+  padding: 3px 5px;
+  border-left: 3px solid transparent;
+}
+
+.engine-line.best {
+  border-left-color: #4caf50;
+}
+
+.engine-line.info {
+  color: #9cdcfe;
+}
+
+#GameListPanel {
+  height: auto;
+  width: 100%;
+  padding: 10px 0;
+  margin-bottom: 15px;
+  font-family: var(--primary-font);
+}
+
+#GameListPanel select {
+  width: 100%;
+  padding: 8px;
+  font-family: var(--primary-font);
+  font-size: 14px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: white;
+}
+
+#MainContent {
+  display: flex;
+  gap: 20px;
+}
+
+#LeftPanel {
+  flex: 0 0 400px;
+}
+
+#HeaderPanel {
+  margin-bottom: 15px;
+  font-family: var(--primary-font);
+}
+
+#BoardFrame {
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin-bottom: 10px;
+}
+
+#BoardFrame td {
+  padding: 0;
+}
+
+#BoardPanel {
+  width: 320px;
+  height: 320px;
+  border: 3px solid var(--board-border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+#BoardPanel table {
+  border-collapse: collapse;
+  width: 100%;
+  height: 100%;
+  font-size: 40px;
+  line-height: 40px;
+}
+
+#BoardPanel td {
+  height: 40px;
+  width: 40px;
+  padding: 0;
+  font-family: var(--board-font);
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+#BoardPanel td.light {
+  background-color: var(--light-square);
+}
+
+#BoardPanel td.dark {
+  background-color: var(--dark-square);
+}
+
+#BoardPanel span {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+  line-height: 40px;
+}
+
+#ControlPanel {
+  margin-top: 10px;
+}
+
+#ControlPanel button {
+  height: 40px;
+  width: 40px;
+  margin: 2px;
+  background: #495057;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+#ControlPanel button:hover {
+  background: #343a40;
+}
+
+#ControlPanel button:active {
+  background: #23272b;
+}
+
+#fen {
+  width: 100%;
+  text-align: center;
+  font-size: 11px;
+  padding: 5px;
+  margin-top: 5px;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+}
+
+#MoveListPanel {
+  flex: 1;
+  min-height: 520px;
+  padding: 15px;
+  overflow-y: auto;
+  font-family: var(--primary-font);
+  background: var(--move-panel-bg);
+  border-radius: 5px;
+  color: var(--move-panel-text);
+}
+
+.movelist {
+  padding-left: 20px;
+}
+
+.movelist li {
+  list-style-type: none;
+  margin-left: 0;
+}
+
+.movelist li * {
+  list-style-type: none;
+}
+
+#MoveListPanel ol {
+  padding-left: 20px; 
+  margin-left: 3px;
+}
+
+#MoveListPanel ul {
+  padding-left: 0px; 
+  margin-left: 5px;
+  color: var(--move-panel-text);
+}
+
+.movelist ol>li {
+  display: list-item;
+}
+
+.movelist ul {
+  list-style: disc; 
+  padding-left: 20px; 
+  margin-left: 0;
+}
+
+.movenode {
+  display: inline-block;
+  padding: 4px 6px;
+  margin: 2px;
+  font-weight: bold;
+  cursor: pointer;
+  color: var(--move-panel-text);
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+
+.movenode:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.collapsible, .collapsible ol, .collapsible ul {
+  list-style-type: none;
+}
+
+.collapsible {
+  padding: 5px;
+  margin: 0;
+  color: var(--move-panel-text);
+}
+
+.collapsible ol, .collapsible ul {
+  padding-left: 15px;
+}
+
+.toggle + ol, .toggle + ul {
+  margin-top: 10px;
+}
+
+.collapsible li {
+  padding: 10px;
+}
+
+.collapsible ol, .collapsible ul {
+  display: none;
+}
+
+.toggle.open + ol, .toggle.open + ul {
+  display: block;
+}
+
+.toggle {
+  color: var(--move-panel-text);
+}
+
+.newarrow {
+  cursor: pointer;
+  float: right;
+  font-size: 20px;
+  line-height: 20px;
+  font-weight: 700;
+  transition: all 0.3s;
+}
+
+.toggle.open .newarrow {
+  transform: rotate(90deg);
+}
+
+.GameHeader {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+
+.GameHeader td {
+  border: 1px solid #dee2e6;
+  padding: 6px 8px;
+  background: white;
+}
+
+.GameHeader td:first-child {
+  font-weight: bold;
+  background: #f8f9fa;
+  width: 80px;
+}
+
+.highlight {
+  background-color: var(--highlight-color) !important;
+  color: #000 !important;
+}
+
+#CoordinatesTop td, #CoordinatesLeft td, #MoveMarker td {
+  height: 40px;
+  width: 40px;
+  text-align: center;
+  line-height: 40px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1250px) {
+  #PgnViewerPlaceholder {
+    width: 100%;
+  }
+  
+  #MainContent {
+    flex-direction: column;
+  }
+  
+  #LeftPanel {
+    flex: 1;
+  }
+}
+</style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script>
+// Stockfish.js engine integration
+class ChessEngine {
+  constructor() {
+    this.engine = null;
+    this.ready = false;
+    this.analyzing = false;
+    this.outputCallback = null;
+  }
+
+  init(outputCallback) {
+    this.outputCallback = outputCallback;
+    
+    // Try to load Stockfish
+    try {
+      // Using CDN version of stockfish.js
+      // Note: In production, you'd need to host stockfish.js or use a proper CDN
+      this.engine = new Worker('https://cdn.jsdelivr.net/npm/stockfish.js@10.0.2/stockfish.js');
+      
+      this.engine.onmessage = (event) => {
+        const message = event.data;
+        
+        if (message === 'readyok') {
+          this.ready = true;
+          this.log('Engine ready!', 'info');
+        } else if (message.startsWith('info')) {
+          this.parseInfo(message);
+        } else if (message.startsWith('bestmove')) {
+          this.parseBestMove(message);
+        }
+      };
+
+      this.engine.postMessage('uci');
+      this.engine.postMessage('isready');
+      
+    } catch (error) {
+      this.log('Engine not available. Using local analysis mode.', 'info');
+      this.log('To use Stockfish, include stockfish.js in your project.', 'info');
+      this.ready = false;
+    }
+  }
+
+  log(message, type = 'normal') {
+    if (this.outputCallback) {
+      this.outputCallback(message, type);
+    }
+  }
+
+  parseInfo(info) {
+    // Parse engine info line
+    const depthMatch = info.match(/depth (\d+)/);
+    const scoreMatch = info.match(/score cp (-?\d+)/);
+    const pvMatch = info.match(/pv (.+)/);
+    
+    if (depthMatch && scoreMatch && pvMatch) {
+      const depth = depthMatch[1];
+      const score = (parseInt(scoreMatch[1]) / 100).toFixed(2);
+      const pv = pvMatch[1].split(' ').slice(0, 5).join(' ');
+      
+      this.log(`Depth ${depth}: ${score > 0 ? '+' : ''}${score} | ${pv}`, 'best');
+    }
+  }
+
+  parseBestMove(message) {
+    const match = message.match(/bestmove (\w+)/);
+    if (match) {
+      this.log(`Best move: ${match[1]}`, 'best');
+      this.analyzing = false;
+    }
+  }
+
+  analyze(fen, depth = 15) {
+    if (!this.engine) {
+      this.log('Engine not initialized. Analysis unavailable.', 'info');
+      return;
+    }
+    
+    if (!this.ready) {
+      this.log('Engine not ready yet...', 'info');
+      return;
+    }
+
+    this.analyzing = true;
+    this.log(`Analyzing position (depth ${depth})...`, 'info');
+    
+    this.engine.postMessage('position fen ' + fen);
+    this.engine.postMessage('go depth ' + depth);
+  }
+
+  stop() {
+    if (this.engine && this.analyzing) {
+      this.engine.postMessage('stop');
+      this.analyzing = false;
+    }
+  }
+
+  setPosition(fen) {
+    if (this.engine && this.ready) {
+      this.engine.postMessage('position fen ' + fen);
+    }
+  }
+}
+</script>
+</head>
+<body>
+<div id="PgnViewerPlaceholder">
+  <h2 style="margin-top: 0;">Enhanced PGN Reader</h2>
+  
+  <!-- Customization Panel -->
+  <div id="CustomizationPanel">
+    <h3>🎨 Customize Appearance</h3>
+    <div class="customize-section">
+      <label>Light Squares:</label>
+      <input type="color" id="lightSquareColor" value="#f0d9b5">
+    </div>
+    <div class="customize-section">
+      <label>Dark Squares:</label>
+      <input type="color" id="darkSquareColor" value="#b58863">
+    </div>
+    <div class="customize-section">
+      <label>Highlight Color:</label>
+      <input type="color" id="highlightColor" value="#ffff00">
+    </div>
+    <div class="customize-section">
+      <label>Font Family:</label>
+      <select id="fontFamily">
+        <option value="'Bitter', serif">Bitter (Serif)</option>
+        <option value="'Roboto', sans-serif">Roboto (Sans)</option>
+        <option value="'Merriweather', serif">Merriweather (Serif)</option>
+        <option value="'Georgia', serif">Georgia (Serif)</option>
+        <option value="'Arial', sans-serif">Arial (Sans)</option>
+      </select>
+    </div>
+    <div class="customize-section">
+      <label>Move Panel Theme:</label>
+      <select id="movesPanelTheme">
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+        <option value="blue">Blue</option>
+        <option value="green">Green</option>
+      </select>
+    </div>
+    <button onclick="resetDefaults()" style="padding: 6px 12px; margin-left: 10px; background: #6c757d; color: white; border: none; border-radius: 3px; cursor: pointer;">Reset Defaults</button>
+  </div>
+
+  <!-- Chess Engine Panel -->
+  <div id="EnginePanel">
+    <h3>🔧 Chess Engine (Stockfish)</h3>
+    <div id="EngineControls">
+      <button id="analyzeBtn" onclick="analyzePosition()">Analyze Position</button>
+      <button id="stopBtn" onclick="stopAnalysis()" disabled>Stop Analysis</button>
+      <label style="margin-left: 20px; font-size: 13px;">
+        Depth: 
+        <input type="number" id="engineDepth" value="15" min="1" max="30" style="width: 50px; padding: 4px; margin-left: 5px;">
+      </label>
+    </div>
+    <div id="EngineOutput">Engine output will appear here...</div>
+  </div>
+
+  <div id="GameListPanel"></div>
+  
+  <div id="MainContent">
+    <div id="LeftPanel">
+      <div id="HeaderPanel"></div>
+      <table id="BoardFrame">
+        <tbody>
+          <tr>
+            <td style="width: 40px; height: 40px"></td>
+            <td>
+              <table style="width: 320px; height: 40px; line-height: 40px; border-spacing: 0;">
+                <tbody id="CoordinatesTop"></tbody>
+              </table>
+            </td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>
+              <table style="height: 320px; width: 40px; line-height: 40px; border-spacing: 0;">
+                <tbody id="CoordinatesLeft"></tbody>
+              </table>
+            </td>
+            <td>
+              <div id="BoardPanel"></div>
+            </td>
+            <td>
+              <table style="height: 320px; width: 40px; border-spacing: 0;">
+                <tbody id="MoveMarker"></tbody>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>
+              <div id="ControlPanel">
+                <button class="control" id="prevGame" title="Previous Game (Page Up or Up Arrow or Tab key)">^</button>
+                <button class="control" id="frstMove" title="First Move (Home key)">|&lt;</button>
+                <button class="control" id="prevMove" title="Previous Move (Left Arrow key)">&lt;</button>
+                <button class="control" id="autoplay" title="Autoplay/Pause (Spacebar or P key)">▶</button>
+                <button class="control" id="nextMove" title="Next Move (Right Arrow key)">&gt;</button>
+                <button class="control" id="lastMove" title="Last Move (End key)">&gt;|</button>
+                <button class="control" id="nextGame" title="Next Game (Page Down or Down Arrow or Backspace key)">v</button>
+                <button class="control" id="flip" title="Flip Board (F key)">⟲</button>
+                <input type="text" id="fen" readonly="readonly" />
+              </div>
+            </td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="MoveListPanel"></div>
+  </div>
+</div>
+
+<script type="text/javascript">
+//This script is an exercise in modular programming. What we need is a device that given a chess position can accurately generate a list of all legal moves. concepts like pieces and squares will be more limited to the goal of generating these moves. one of the first items will be finding a check.
+//First caution is to watch out for name conflicts. My React app already has Board and Square and Piece objects. Will React conflict? Time to find out. So far below, I have used ChessChecker for the overall object and Move. squares data is a member array inside ChessChecker containing piece info as strings such as "WN" for White Knight. React interface will need several Move objects: I'll probably name them MoveNode, MoveList/MoveTree, Game, and GameBook.
+
+//FOR TESTING
+//This FEN seems to be used as global by Babel, so race condition okay?
+var FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //standard
+//var FEN = "6k1/bpp2pBp/3q1P2/pP1b3B/2pnr3/P7/6PP/R2QR2K b - - 0 1";   //Nunn1001-696 (34)
+//var FEN = "k7/2K5/8/8/2R5/8/2R5/3b4 w - - 0 1";                       //Rook disambiguation (25)
+//var FEN = "kr6/p7/2K5/3N4/N7/8/8/8 w - - 0 1";                        //Knight disambiguation (16)
+//var FEN = "r2k3r/8/8/8/8/8/8/R3K2R w KQ - 0 1";                       //Castling with check (26)
+//var FEN = "k7/n1K5/1P6/8/8/8/8/8 w - - 0 1";                          //Checkmater (5)
+//var FEN = "k7/8/1KP5/8/8/8/8/8 w - - 0 1";                            //stalemater
+//var FEN = "k7/p1KP4/B7/8/8/8/8/8 w - - 0 1";                          //promoter with # and = (15)
+//var FEN = "r1bqkbnr/ppp2ppp/2np4/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 0 4";   //Scholar's
+//var FEN = "rnbqkb1r/pp3ppp/2p1p2n/2PpP3/8/8/PP1P1PPP/RNBQKBNR w KQkq d6 0 5"; //passant test
+
+var NVECTORS = [-17, -15, -10, -6, 6, 10, 15, 17];
+var QVECTORS = [-8, -1, 1, 8, -9, -7, 7, 9];
+
+function Move(start, finis, piece, type, captive, promotion) {
+  this.start = start;
+  this.finis = finis;
+  this.piece = piece;
+  this.type = type;	//move, jump (=>ep), capture (=>'x'), castling, en passant (=>remove pawn)
+  this.captive = captive;
+  if (promotion == "MT" || promotion == "") promotion = "-"; // '-QRBN'
+  this.promotion = promotion;
+  this.suffix = ""; //+#=
+  this.nags = "";
+  this.braces = "";
+  this.parentheses = "";
+  // ++ for double check, dis.ch. for discovered check, e.p. for en passant rejected as not PGN standard
+
+  this.parent = null;         //These will probably only exist in the front-end move tree interface.
+  this.children = []; //These will probably only exist in the front-end move tree interface.
+
+  var fr = "abcdefgh".substr(start % 8, 1) + (8 - Math.floor(start / 8));
+  var to = "abcdefgh".substr(finis % 8, 1) + (8 - Math.floor(finis / 8));
+  this.fanSignature = fr + to + promotion;
+  var san = piece == "P" ? "" : piece;
+  san += type == "capture" ? "x" : "";
+  if (piece == "P" && (type == "capture" || type == "en passant")) san = fr.substr(0, 1) + "x";
+  san += to;
+  san += promotion == "-" ? "" : "=" + promotion;
+  if (this.type == "castling") {
+    if (this.finis > this.start) san = "O-O";
+    else if (this.finis < this.start) san = "O-O-O";
+  }
+  this.sanPrintable = san;
+};
+
+function ChessChecker(fen) {
+  if (!fen) fen = FEN;
+  this.fen = fen;
+
+  this.fenToSquares = function(fen) {
+    var squares = [];
+    for (var i = 0; i < fen.length; i++) {
+      var char = fen.substr(i, 1);
+      var charUp = char.toUpperCase();
+      if ("KQBNPR".indexOf(charUp) > -1) {
+        var color = char == charUp ? "W" : "B";
+        if (charUp == "K") this[color + charUp] = squares.length;
+        squares.push(color + charUp);
+      }
+      if ("12345678".indexOf(charUp) > -1) {
+        for (var j = 0; j < charUp * 1; j++) {
+          squares.push("MT");
+        }
+      }
+    }
+    return squares;
+  }
+
+  var fenChunks = fen.split(' ');
+  //console.log(fen);
+  if (!fenChunks[0]) fenChunks[0] = '4k3/8/8/8/8/8/8/4K3';
+  this.squares = this.fenToSquares(fenChunks[0]);
+  if (!fenChunks[1]) fenChunks[1] = 'w';
+  this.toMove = fenChunks[1].toUpperCase();
+  if (!fenChunks[2]) fenChunks[2] = '-';
+  this.WOO = fenChunks[2].indexOf('K') > -1;
+  this.WOOO = fenChunks[2].indexOf('Q') > -1;
+  this.BOO = fenChunks[2].indexOf('k') > -1;
+  this.BOOO = fenChunks[2].indexOf('q') > -1;
+  if (!fenChunks[3]) fenChunks[3] = '-';
+  var ep = fenChunks[3];
+  if (ep == "-") {
+    this.ep = 64;
+  }
+  else {
+    this.ep = "abcdefgh".indexOf(ep.substr(0, 1)) + 8 * ("87654321".indexOf(ep.substr(1, 1)));
+  }
+  if (!fenChunks[4]) fenChunks[4] = '0';
+  this.drawCount = fenChunks[4] * 1;
+  if (!fenChunks[5]) fenChunks[5] = '1';
+  this.moveCount = fenChunks[5] * 1;
+  this.fen = fenChunks.join(' ');
+  this.legalMoves = []; // The primary objective of this object, but squares and FEN may have hooks in and out
+
+
+  // Squares might not always be the member squares. It may be temporary copy, reducing need for takeback
+  // Now I am going to play with fire and try to change this function signature.
+  // I originally designed the algorithm to scan the board and use "defender" as the 
+  // color of pieces to be captured. But now I wish to reconfigure the generator for the attacker
+  // When calling lookAhead, I want to change to making the move and seeing who gets to check
+  this.generateMoves = function(squares, mode, mover) {
+    //var attacker = defender == "W" ? "B" : "W";
+    var passive = mover == "W" ? "B" : "W";
+    var pawnDir = mover == "W" ? 1 : -1;
+    var moves = [];
+    for (var i = 0; i < 64; i++) {
+      if (mode == "regicide") {
+        i = this[passive + "K"];
+      }
+      var toSq = i;
+      var color = squares[i].substr(0, 1);
+      if (color == mover) continue;
+      var type = color == passive ? "capture" : "move";
+
+      //Knight Moves
+      for (var j = 0; j < NVECTORS.length; j++) {
+        var frSq = toSq + NVECTORS[j];
+        if (frSq >= 0 && frSq <= 63 && (Math.abs((frSq % 8) - (toSq % 8)) < 3)) {
+          if (squares[frSq] == mover + "N") {
+            if (mode == "regicide") return true;
+            var move = new Move(frSq, toSq, "N", type, squares[toSq], "");
+            if (!this.lookAhead(squares, move, "regicide", passive)) moves.push(move);
+          }
+        }
+      }
+
+      //King, Queen, Rook, and Bishop Moves
+      for (var j = 0; j < QVECTORS.length; j++) {
+        var blocked = false;
+        var frSq = toSq;
+        var distance = 1;
+        while (this.onBoard(frSq, QVECTORS[j]) && !blocked) {
+          frSq += QVECTORS[j];
+          if (squares[frSq] != "MT") {
+            blocked = true;
+            if (squares[frSq].substr(0, 1) == mover) {
+              var piece = squares[frSq].substr(1, 1);
+              if (piece == "K" && distance == 1) {
+                if (mode == "regicide") return true;
+                var move = new Move(frSq, toSq, "K", type, squares[toSq], "");
+                if (!this.lookAhead(squares, move, "regicide", passive)) moves.push(move);
+              }
+              if (piece == "Q") {
+                if (mode == "regicide") return true;
+                var move = new Move(frSq, toSq, "Q", type, squares[toSq], "");
+                if (!this.lookAhead(squares, move, "regicide", passive)) moves.push(move);
+              }
+              if (piece == "R" && j <= 3) {
+                if (mode == "regicide") return true;
+                var move = new Move(frSq, toSq, "R", type, squares[toSq], "");
+                if (!this.lookAhead(squares, move, "regicide", passive)) moves.push(move);
+              }
+              if (piece == "B" && j >= 4) {
+                if (mode == "regicide") return true;
+                var move = new Move(frSq, toSq, "B", type, squares[toSq], "");
+                if (!this.lookAhead(squares, move, "regicide", passive)) moves.push(move);
+              }
+            }
+          }
+          distance++;
+        }
+      }
+
+      //Pawn Captures
+      var toRow = Math.floor(toSq/8);
+      var promoRow = mover == "B" ? 7 : 0;
+      if (type == "capture" || toSq == this.ep) {
+        type = toSq == this.ep ? "en passant" : "capture";
+        for (j = 6; j < 8; j++) {
+          var frSq = toSq + QVECTORS[j] * pawnDir; //Pawns should not be on rows 0 or 7, else boundary error.
+          if (squares[frSq] == mover + "P" && Math.abs((frSq % 8) - (toSq % 8)) == 1) {
+            if (mode == "regicide") return true;
+            var move = new Move(frSq, toSq, "P", type, "", "");
+            if (!this.lookAhead(squares, move, "regicide", passive)) {
+              if (toRow == promoRow) {
+                moves.push(new Move(frSq, toSq, "P", type, "", "Q"));
+                moves.push(new Move(frSq, toSq, "P", type, "", "R"));
+                moves.push(new Move(frSq, toSq, "P", type, "", "B"));
+                moves.push(new Move(frSq, toSq, "P", type, "", "N"));
+              }
+              else moves.push(new Move(frSq, toSq, "P", type, "", ""));
+            }
+          }
+        }
+      }
+      if (mode == "regicide") return moves.length > 0; // ignore pawn pushes and castling
+
+      //Pawn Steps
+      var frSq = toSq + 8 * pawnDir;
+      var midRow = mover == "B" ? 3 : 4;
+      if (squares[toSq] == "MT") {
+        var frSq = toSq + 8 * pawnDir; //Pawns should not be on rows 0 or 7, else boundary error.
+        if (squares[frSq] == mover + "P") {
+          var move = new Move(frSq, toSq, "P", type, "", "");
+          if (!this.lookAhead(squares, move, "regicide", passive)) {
+            if (toRow == promoRow) {
+              moves.push(new Move(frSq, toSq, "P", type, "", "Q"));
+              moves.push(new Move(frSq, toSq, "P", type, "", "R"));
+              moves.push(new Move(frSq, toSq, "P", type, "", "B"));
+              moves.push(new Move(frSq, toSq, "P", type, "", "N"));
+            }
+            else moves.push(new Move(frSq, toSq, "P", type, "", ""));
+          }
+        }
+        //Pawn Jumps
+        else if (squares[frSq] == "MT" && toRow == midRow) {
+          var frSq = toSq + 16 * pawnDir;
+          if (squares[frSq] == mover + "P") {
+            var move = new Move(frSq, toSq, "P", "jump", "", "");
+            if (!this.lookAhead(squares, move, "regicide", passive)) {
+              if (toRow == promoRow) {
+                moves.push(move);
+                moves.push(new Move(frSq, toSq, "P", "jump", "", "R"));
+                moves.push(new Move(frSq, toSq, "P", "jump", "", "B"));
+                moves.push(new Move(frSq, toSq, "P", "jump", "", "N"));
+              }
+              else moves.push(new Move(frSq, toSq, "P", "jump", "", ""));
+            }
+          }
+        }
+      }
+    }
+
+    //Castling - assumes castling flags are accurate
+    var castle = mover == "W" ? 60 : 4;
+    if (this[mover + "OO"] && squares[castle + 1] == "MT" && squares[castle + 2] == "MT") {
+      var checkOut = new Move(castle, castle, "K", "castling", "", "");
+      var checkThrough = new Move(castle, castle + 1, "K", "castling", "", "");
+      var checkInto = new Move(castle, castle + 2, "K", "castling", "", "");
+      if (!this.lookAhead(squares, checkOut, "regicide", passive) && !this.lookAhead(squares, checkThrough, "regicide", passive) && !this.lookAhead(squares, checkInto, "regicide", passive)) {
+        moves.push(checkInto);
+      }
+    }
+    if (this[mover + "OOO"] && squares[castle - 1] == "MT" && squares[castle - 2] == "MT" && squares[castle - 3] == "MT") {
+      var checkOut = new Move(castle, castle, "K", "castling", "", "");
+      var checkThrough = new Move(castle, castle - 1, "K", "castling", "", "");
+      var checkInto = new Move(castle, castle - 2, "K", "castling", "", "");
+      if (!this.lookAhead(squares, checkOut, "regicide", passive) && !this.lookAhead(squares, checkThrough, "regicide", passive) && !this.lookAhead(squares, checkInto, "regicide", passive)) {
+        moves.push(checkInto);
+      }
+    }
+
+    //Check for stymied zero-move condition
+    if (mode == "stymied") {
+      if (moves.length == 0) return true;
+      else {
+        //console.log(moves);
+        return false;
+      }
+    }
+
+    //console.log(moves); // Hopefully, we have gotten a clean list of legal moves.
+    this.legalMoves = moves;
+    //Disambiguate
+    this.disambiguate();
+    //Suffixate
+    this.suffixate(squares);
+    //console.log(this.legalMoves);
+  }
+
+  //Disambiguate routine. To be used for reading pgn's and for outputting printable SANs.
+  this.disambiguate = function() {
+    var algebraics = {};
+    for (var i = 0; i < this.legalMoves.length; i++) {
+      if (!(this.legalMoves[i].sanPrintable in algebraics)) {
+        algebraics[this.legalMoves[i].sanPrintable] = i;
+      }
+      else {
+        //Standard Algebraic Notation rules say try file letter, then rank number, then both
+        var hashMove = this.legalMoves[algebraics[this.legalMoves[i].sanPrintable]];
+        //console.log("RESOLVING " + this.legalMoves[i].piece + this.legalMoves[i].fanSignature + " vs. " + hashMove.piece + hashMove.fanSignature);
+        var hashAlgebraic = hashMove.sanPrintable;
+        var hashFile = hashMove.fanSignature.substr(0, 1);
+        var newFile = this.legalMoves[i].fanSignature.substr(0, 1);
+        if (hashFile != newFile) {
+          hashMove.sanPrintable = hashAlgebraic.substr(0, 1) + hashFile + hashAlgebraic.substr(1);
+          this.legalMoves[i].sanPrintable = this.legalMoves[i].sanPrintable.substr(0, 1) + newFile + this.legalMoves[i].sanPrintable.substr(1);
+          algebraics[hashMove.sanPrintable] = algebraics[hashAlgebraic];
+          algebraics[this.legalMoves[i].sanPrintable] = i;
+        }
+        else {
+          var hashRank = hashMove.fanSignature.substr(1, 1);
+          var newRank = this.legalMoves[i].fanSignature.substr(1, 1);
+          //console.log(this.legalMoves[i]);
+          if (hashRank != newRank) {
+            hashMove.sanPrintable = hashAlgebraic.substr(0, 1) + hashRank + hashAlgebraic.substr(1);
+            this.legalMoves[i].sanPrintable = this.legalMoves[i].sanPrintable.substr(0, 1) + newRank + this.legalMoves[i].sanPrintable.substr(1);
+            algebraics[hashMove.sanPrintable] = algebraics[hashAlgebraic];
+            algebraics[this.legalMoves[i].sanPrintable] = i;
+          }
+          else {
+            hashMove.sanPrintable = hashAlgebraic.substr(0, 1) + hashMove.fanSignature.substr(0, 2) + hashAlgebraic.substr(1);
+            this.legalMoves[i].sanPrintable = moves[i].sanPrintable.substr(0, 1) + this.legalMoves[i].fanSignature.substr(0, 2) + this.legalMoves[i].sanPrintable.substr(1);
+            algebraics[hashMove.sanPrintable] = algebraics[hashAlgebraic];
+            algebraics[this.legalMoves[i].sanPrintable] = i;
+          }
+        }
+      }
+    }
+  }
+
+  //Suffixate routine. Checks do not disambiguate per http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm
+  //So perhaps this goes last after disambiguate.
+  //Check regicide on passive player after move to get checks.
+  //Check if passive is now stymied after move to get stalemate/checkmate status.
+  this.suffixate = function(squares) {
+    var algebraics = [];
+    for (var i = 0; i < this.legalMoves.length; i++) {
+      var checked = this.lookAhead(squares, this.legalMoves[i], "regicide", this.toMove);
+      var stymied = this.lookAhead(squares, this.legalMoves[i], "stymied", this.toMove == "W" ? "B" : "W");
+      //console.log(this.legalMoves[i], checked, stymied, this.toMove);
+      if (checked) {
+        if (stymied) {
+          this.legalMoves[i].suffix = "#";
+          this.legalMoves[i].sanPrintable += "#";
+        }
+        else {
+          this.legalMoves[i].suffix = "+";
+          this.legalMoves[i].sanPrintable += "+";
+        }
+      }
+      else {
+        if (stymied) {
+          this.legalMoves[i].suffix = "=";
+          this.legalMoves[i].sanPrintable += "=";
+        }
+      }
+      algebraics.push(this.legalMoves[i].sanPrintable);
+    }
+    return algebraics;
+  }
+
+  //This is a quick-and-dirty version of makeMove without updating the this.fen
+  //Purpose is three-fold:
+  //1. Check if mover leaves his king in check = ILLEGAL
+  //2. Check if passive is checked by a move: add + suffix.
+  //3. Check if passive is stymied by stalemate or checkmate: add = or # suffix.
+  //Squares needed to be added to arguments because it was only copying from original ply
+  //and that didn't do the job for the second ply of stymied.
+  //Now 1. generateMoves passes a copy of the original board (this.squares) to the stymied lookAhead. 2. stymied lookahead, makes a copy of the board (tmpBoard), makes a move, and passes both to generateMoves. 3. generateMoves creates new moves and passes each and step2's tmpBoard to the regicide lookAhead. 4. regicide makes another copy of tmpBoard, makes each move, and then looks for regicidal moves to invalidate step3's moves. If mode is "stymied", legal moves totalling 0 returns true stymied. If mode is "regicide", any plausible attack on the last recorded location of the passive king returns true regicide.
+  this.lookAhead = function(squares, move, mode, nextMover) {
+    var tmpSquares = [];
+    for (var i = 0; i < 64; i++) {
+      tmpSquares[i] = squares[i];
+    }
+
+    //When checking for check suffixes, nonmover hasn't moved, mover K should be unequal and saveKing shouldn't shift the passive's king.
+    var mover = squares[move.start].substr(0, 1);
+    var saveKing = this[mover + "K"]; // Save king position for after the woodpushing
+    var saveEp = this.ep;
+    if (mode == "stymied" && move.type == "jump") {
+      this.ep = (move.start + move.finis) / 2;
+      //En passant tracking was added because Burgess #40 Polugaevsky-Nezhmetdinov has move 27... c5+
+      //which was marked as c5# because en passant dxc6 was not sent into lookahead legality
+      //Same game has discovered 29... Nexd3+. PGN docs seem to indicate that check does not
+      //disambiguate, so 29... Nxd3+ is insufficient to distinguish from non-checking 29... Nbxd3
+      //Without the stymied condition, just saving the new ep seemed to create frequent errors.
+    }
+    else this.ep = 64;
+
+    tmpSquares = this.pushWood(tmpSquares, move);
+
+    // Now that pieces have shifted, finish the mode's operation and get a true/false result.
+    var result = this.generateMoves(tmpSquares, mode, nextMover);
+    this[mover + "K"] = saveKing; // This is the only do/undo for now.
+    this.ep = saveEp;
+    return result;
+  }
+
+  this.onBoard = function(start, vector) {
+    var total = start + vector;
+    if (total < 0 || total > 63) return false;
+    return (Math.abs((start % 8) - (total % 8)) < 2);
+  }
+
+  // This would normally be utilized by the interface to revert an illegal move.
+  // Once the legal move is exposed, the interface can choose to animate it and then come back for makeMove and update its model.
+  this.isLegal = function(frSq, toSq) {
+    //Force this ChessChecker to regenerate legalMoves.
+    this.generateMoves(this.squares, "all legal moves", this.toMove);
+    for (var i = 0; i < this.legalMoves.length; i++) {
+      if (this.legalMoves[i].start == frSq && this.legalMoves[i].finis == toSq) return this.legalMoves[i];
+    }
+    return false;
+  }
+
+  this.validatePgn = function(pgnMove) {
+    //Force this ChessChecker to regenerate legalMoves.
+    this.generateMoves(this.squares, "all legal moves", this.toMove);
+    for (var i = 0; i < this.legalMoves.length; i++) {
+      if (this.legalMoves[i].sanPrintable == pgnMove || this.legalMoves[i].sanPrintable == pgnMove + '=') {
+        this.legalMoves[i].fenBefore = this.fen;
+        return this.legalMoves[i];
+      }
+    }
+    return false;
+  }
+
+  this.squaresToFen = function() {
+    var fen = "";
+    var emptyCount = 0;
+    for (var i = 0; i < this.squares.length; i++) {
+      if (this.squares[i] == "MT") emptyCount++;
+      else {
+        if (emptyCount > 0) fen += emptyCount;
+        emptyCount = 0;
+        var piece = this.squares[i];
+        fen += piece.substr(0, 1) == "W" ? piece.substr(1) : piece.substr(1).toLowerCase();
+      }
+      if (i % 8 == 7) {
+        if (emptyCount > 0) fen += emptyCount;
+        if (i < 63) fen += "/";
+        emptyCount = 0;
+      }
+    }
+    return fen;
+  }
+
+  this.squaresToBlindfold = function() {
+    let pieceOrder = "KQRBNP";
+    let whitePositions = "";
+    let blackPositions = "";
+    for (let i = 0; i < pieceOrder.length; ++i) {
+      //console.log(pieceOrder.substr(i, 1));
+      for (cols = 0; cols < 8; ++cols) {
+        for (rows = 7; rows >= 0; --rows) {
+          j = rows * 8 + cols;
+          let color = this.squares[j].substr(0, 1);
+          let type = this.squares[j].substr(1);
+          let position = "abcdefgh".substr(j % 8, 1) + (8 - Math.floor(j / 8));
+          //if (color != "M") console.log(color, type);
+          if (color == "W") {
+            if (type == pieceOrder.substr(i, 1)) {
+              if (whitePositions.length > 0) whitePositions += ", ";
+              if (pieceOrder.substr(i, 1) != "P") whitePositions += type;
+              whitePositions += position;
+            }
+          }
+          if (color == "B") {
+            if (type == pieceOrder.substr(i, 1)) {
+              if (blackPositions.length > 0) blackPositions += ", ";
+              if (pieceOrder.substr(i, 1) != "P") blackPositions += type;
+              blackPositions += position;
+            }
+          }
+        }
+      }
+    }
+    return [whitePositions, blackPositions];
+  }
+
+  this.pushWood = function(squares, move) {
+    if (move.start == move.finis) return squares;
+    var mover = squares[move.start].substr(0, 1);
+    if (squares[move.start] == mover + "K") this[mover + "K"] = move.finis;
+    squares[move.finis] = squares[move.start];
+    squares[move.start] = "MT";
+    // En passant shifts
+    if (move.type == "en passant") {
+      var vector = move.finis - move.start;
+      if (vector == -9 || vector == 7) squares[move.start - 1] = "MT";
+      else if (vector == -7 || vector == 9) squares[move.start + 1] = "MT";
+      //console.log(squares);
+    }
+    // Promotion shifts
+    if ("QRBN".indexOf(move.promotion) > -1) {
+      squares[move.finis] = mover + move.promotion;
+    }
+    // Castling shifts
+    if (move.type == "castling") {
+      var rookStart = move.finis > move.start ? move.finis + 1 : move.finis - 2;
+      var rookFinis = move.finis > move.start ? move.finis - 1 : move.finis + 1;
+      squares[rookFinis] = squares[rookStart];
+      squares[rookStart] = "MT";
+    }
+    return squares;
+  }
+
+  this.updateFen = function(lastMove) {
+    // Still, part of me wants to split these into two different re-usable functions: pushWood and updateFen
+    fen = this.squaresToFen();
+    
+    this.toMove = this.toMove == "W" ? "B" : "W";
+    fen += " " + this.toMove.toLowerCase();
+    
+    var castling = "";
+    if (this.WOO && this.squares[60] == "WK" && this.squares[63] == "WR") {
+      this.WOO = true;
+      castling += "K";
+    }
+    else this.WOO = false;
+    if (this.WOOO && this.squares[60] == "WK" && this.squares[56] == "WR") {
+      this.WOOO = true;
+      castling += "Q";
+    }
+    else this.WOOO = false;
+    if (this.BOO && this.squares[4] == "BK" && this.squares[7] == "BR") {
+      this.BOO = true;
+      castling += "k";
+    }
+    else this.BOO = false;
+    if (this.BOOO && this.squares[4] == "BK" && this.squares[0] == "BR") {
+      this.BOOO = true;
+      castling += "q";
+    }
+    else this.BOOO = false;
+    if (castling == "") castling = "-";
+    fen += " " + castling;
+    
+    if (lastMove.type == "jump") {
+      this.ep = (lastMove.start + lastMove.finis) / 2;
+      fen += " " + "abcdefgh".substr(this.ep % 8, 1) + (8 - Math.floor(this.ep / 8));
+    }
+    else {
+      this.ep = 64; //should prevent Chess24 programming blunder
+      fen += " -";
+    }
+    this.drawCount++;
+    if (lastMove.type == "capture" || lastMove.piece == "P") this.drawCount = 0;
+    fen += " " + this.drawCount;
+    if (this.toMove == "W") this.moveCount++;
+    fen += " " + this.moveCount;
+    return fen;
+  }
+
+  this.makeMove = function(legalMove) {
+    this.squares = this.pushWood(this.squares, legalMove);
+
+    legalMove.fenBefore = this.fen;
+    this.fen = this.updateFen(legalMove);
+    // console.log(legalMove.fenBefore, this.fen);
+    // no return value: perhaps we return legalMove with modified fenBefore,
+    // we just have to remember to use returned object
+    return legalMove; // don't have enough information for moveList parent/firstChild relationships
+  }
+
+  this.fenToGbr = function() {
+    var fenCount = {"Q": 0, "q": 0, "R": 0, "r": 0, "B": 0, "b": 0, "N": 0, "n": 0, "P": 0, "p": 0};
+    var kPos = -1, KPos = -1;
+    var squaresPassed = 0;
+    //console.log(fen);
+    for (var i = 0; i < this.fen.length; i++) {
+      var character = this.fen.substr(i, 1);
+      if ("12345678".indexOf(character) > -1) squaresPassed += character * 1;
+      else if ("KkQqRrBbNnPp".indexOf(character) > -1) {
+        if (character == 'K') Kpos = squaresPassed;
+        else if (character == 'k') kpos = squaresPassed;
+        else {
+          fenCount[character]++
+        }
+        squaresPassed += 1;
+      }
+      if (character == ' ') {
+        if (squaresPassed != 64) console.log("Error - squares not 64");
+        break;
+      }
+    }
+    if (Kpos == -1 || kpos == -1) {
+      if (Kpos == -1) console.log("WK missing from " + fen);
+      if (kpos == -1) console.log("bk missing from " + fen);
+    }
+    else {
+      Kalg = String.fromCharCode('a'.charCodeAt(0) + Kpos % 8) + (Math.ceil((64 - Kpos)/8));
+      kalg = String.fromCharCode('a'.charCodeAt(0) + kpos % 8) + (Math.ceil((64 - kpos)/8));
+    }
+    var gbr = '' + (fenCount["Q"]+3*fenCount["q"]) + (fenCount["R"]+3*fenCount["r"]) + (fenCount["B"]+3*fenCount["b"]) + (fenCount["N"]+3*fenCount["n"]) + '.' + fenCount["P"] + fenCount["p"] + Kalg + kalg;
+    return gbr;
+  }
+
+}
+
+var chessChecker = new ChessChecker(FEN);
+var kibChecker = new ChessChecker(FEN);
+//var candidate = chessChecker.isLegal(50, 42);
+//if (candidate) chessChecker.makeMove(candidate);
+
+// TODO: 
+// How do we chain up new positions? Probably, we animate the validated move in the browser, then callback to set the squares and/or FEN state to equal this object
+// During PGN parsing, we probably consult this instantiated object to populate a movelist
+</script>
+<script type="text/javascript">
+/***********************************
+** PgnParser has Dependencies:    **
+** ChessChecker.js which contains **
+** ChessChecker and Move          **
+** PGNPATH optional in caller     **
+***********************************/
+var PGNPATH = '';
+
+var NAG = {
+  "$0": "",
+  "$1": "!",
+  "$2": "?",
+  "$3": "!!",
+  "$4": "??",
+  "$5": "!?",
+  "$6": "?!",
+  "$7": "□", //□
+  "$8": "",
+  "$9": "???",
+  "$10": "=",
+  "$11": "=_",
+  "$12": "=~",
+  "$13": "∞",
+  "$14": "⩲", //⩲
+  "$15": "⩱", //⩱
+  "$16": "⁺⁄₋", //⁺⁄₋
+  "$17": "⁻⁄₊", //⁻⁄₊
+  "$18": "+-",
+  "$19": "-+",
+  "$20": "++--",
+  "$21": "--++",
+  "$22": "⨀",  //⨀
+  "$23": "⨀"
+};
+
+function PgnParser() {
+  this.filename = "";           //loaded filename
+  this.games = [];              //list of parsed games
+  this.gameHeaders = [];        //array of strings for listing
+  this.currentGameIndex = -1;   //unselected
+
+  this.moves = new Array();     //list of Move()
+  this.current_move_index = 0;  //before first move, counted by half-moves
+
+  this.loadFile = function(pgnFile, callback) {
+    this.filename = pgnFile;
+    self = this;
+    fetch(PGNPATH + pgnFile)
+      .then(response => response.text())
+      .then(function(text2) {
+        //console.log(text2.substr(0, 50));
+        self.parseGames(text2, pgnFile, callback);
+      });
+  }
+
+  //PGN file parsing
+  this.parseGames = function(pgn, pgnFile, callback) {
+    //Strategy:
+    //1.Start at the beginning
+    //2.Separate into multiple games
+    //3.Search for square brackets - regex?
+    //4.Locate gamescore block
+    this.games = [];
+    var self = this;
+    var segment = /(\[Event \"[\s\S]*?)\[Event \"/g;
+    var pgnTags = /\[(.+?)\s\"(.+?)\"\]/g;
+    var lastGameStart = 0;
+    //console.log(pgn.substr(0, 50));
+    while (gameScore = segment.exec(pgn)) {
+      segment.lastIndex -= 10;
+      lastGameStart = segment.lastIndex;
+      
+      var game = {};
+      var lastIndex = 0;
+      while (matches = pgnTags.exec(gameScore[1])) {
+        game[matches[1]] = matches[2];
+        lastIndex = matches.index;
+      }
+      var startText = gameScore[1].search(/\]\s+[0-9{]+/) + 2; //was .indexOf('\r\n\r\n');
+      game['Movetext'] = gameScore[1].substr(startText).trim(); //lastIndex + 28 to trim EventDate and \r\n
+      //console.log(game);
+      this.games.push(game);
+    }
+
+    var lastGame = pgn.substr(lastGameStart);
+    var game = {};
+    while (matches = pgnTags.exec(lastGame)) {
+      game[matches[1]] = matches[2];
+      lastIndex = matches.index;
+    }
+    var startText = lastGame.search(/\]\s+[0-9{]+/) + 2; //was .indexOf('\r\n\r\n');
+    game['Movetext'] = lastGame.substr(startText).trim();
+    this.games.push(game);
+
+    var maxDigits = this.games.length.toString().length;
+    this.gameHeaders = [];
+    for (var i = 0; i < this.games.length; i++) {
+      this.gameHeaders.push(("00000" + (i + 1)).slice(-maxDigits) + ". " + this.games[i]["White"] + "-" + this.games[i]["Black"] + ", " + this.games[i]["Result"]);
+    }
+    callback(pgnFile, this.gameHeaders);
+  }
+
+  this.nagsToGlyphs = function(nagstring) {
+    if (nagstring == "") return "";
+    var nags = nagstring.trim().split(' ');
+    //console.log(nags);
+    if (!nags) return "";
+    var glyphs = "";
+    for (var i = 0; i < nags.length; i++) {
+      glyphs += NAG[nags[i]];
+    }
+    return glyphs;
+  }
+
+  this.loadGame = function(selectedGameIndex, callback) {
+    //This function starts with an index inside a game array and returns an array of Move objects
+    //The clickable property should be ready to embed into the interface.
+    this.currentGameIndex = selectedGameIndex;
+    var game = this.games[this.currentGameIndex];
+    if (typeof(game.FEN) != "undefined") chessCheck2 = new ChessChecker(game.FEN);
+    else chessCheck2 = new ChessChecker(FEN);
+    return this.loadText(chessCheck2, game.Movetext);
+  }
+
+  this.loadText = function(chessCheck2, movesText, boolOut, until) {
+    //This function starts with a chessChecker position and the plain text of movesText and returns an array of Move objects
+    movesText = movesText.replace(/(\r\n|\n|\r)/gm," ");
+    var moveRegex = /( (\()|(\))|([(0-9. ]+)?([KQRBNa-h]?[a-h]?[1-8]?x?[a-h][1-8]=?[QRBN]?[+#]?|O-O-O[+#]?|O-O[+#]?)(( \$\d{1,2})*)(( \{.+?\})?))/g; // 4/6/2020 moved first question mark outside parentheses to recognize unnumbered move
+    var move_id = 1;
+    var ply = 1;
+    var moves = [];
+    var parent = new Move(0, 0, null, "", "", "");
+    parent.fenBefore = chessCheck2.fen;
+    parent.id = 0;
+    parent.clickText = ">";
+    parent.clickFigurine = ">";
+    parent.isMainLine = false;
+    var preamble = /^(\{[^\}]+?\})/m;
+    var preambleMatch = preamble.exec(movesText);
+    //console.log(movesText, preambleMatch);
+    if (preambleMatch !== null && typeof(preambleMatch[1]) != "undefined") {
+      parent.clickText = preambleMatch[1] + ">";
+      parent.clickFigurine = preambleMatch[1] + ">";
+      parent.braces = preambleMatch[1];
+      moveRegex.lastIndex = preambleMatch.index + preambleMatch[1].length;
+    }
+    moves.push(parent);
+    //console.log(movesText, parent);
+
+    var resumeFen = "";
+    var parentStack = [];
+    var resumeFenStack = [];
+    var variationStart = true;
+    while (movePgn = moveRegex.exec(movesText)) {
+      //console.log(movePgn);
+      if (movePgn[0] == " (") {
+        parentStack.push(parent);// parenthetical parents saved like a stack, popped when resumed, re-pushed if there is another branch from same parent
+        resumeFenStack.push(chessCheck2.fen); //save this position for resumption after close parens
+        chessCheck2 = new ChessChecker(parent.fenBefore); //adjust board to position before branch
+        var parentIndex = parent.parent;
+        parent = moves[parentIndex]; // identify parent of next node found after open parens
+        variationStart = true;
+        continue;
+      }
+      if (movePgn[0] == ")") {
+        resumeFen = resumeFenStack.pop();
+        chessCheck2 = new ChessChecker(resumeFen);
+        parent = parentStack.pop();
+        continue;
+      }
+      //Nested Parentheses Bugs: RrPvB #3/7/9 were broken. resumeFenStack helped #9, but #3 is still broken due to pre-move braces containing plausible moves; moving to after-move fixes this
+      var valid = chessCheck2.validatePgn(movePgn[5]);
+      if (!valid) {
+        console.log("validatePgn failed!", chessCheck2.moveCount, movePgn[5], moves, chessCheck2.legalMoves, chessCheck2.fen);
+        var tryAgain = movePgn[5];
+        if (tryAgain.length > 3) tryAgain = tryAgain.substr(0, 1) + tryAgain.substr(2);
+        console.log("...but tryAgain with...", tryAgain);
+        valid = chessCheck2.validatePgn(tryAgain);
+        if (!valid) {
+          console.log("failed!");
+          if (boolOut) return 0;
+        }
+        else console.log("...succeeded!");
+        //For test: stalemating promotions in Kubbel 6, 18, 79, 99
+        //superfluous disambiguation in Scandi 2
+        //PgnParser lines 159-171
+        //ChessChecker line 384
+      }
+      if (typeof(movePgn[6]) != "undefined") valid.nags = movePgn[6];
+      if (typeof(movePgn[8]) != "undefined") {
+				valid.braces = movePgn[8];
+				//Added 7/9/2021
+				let noTimes = movePgn[8].replace(/ ?\[%emt \d: ?\d\d: ?\d\d\] ?/g, '');
+				if (noTimes == " {}") noTimes = "";
+				valid.braces = noTimes;
+				//End Add
+			}
+      //console.log("regexes", movePgn[6], "|", movePgn[8]);
+      //console.log("annotations", valid.nags, "|", valid.braces);
+
+      //extended properties
+      valid.id = move_id;
+      valid.parent = parent.id;
+      moves[parent.id].children.push(move_id);
+      move_id++;
+      valid.clickText = valid.sanPrintable;
+      valid.clickFigurine = valid.clickText.replace(/K/g, '♔').replace(/N/g, '♘').replace(/B/g, '♗').replace(/R/g, '♖').replace(/Q/g, '♕');
+      var glyphs = this.nagsToGlyphs(valid.nags);
+      valid.clickText += glyphs + valid.braces + valid.parentheses;
+      valid.clickFigurine += glyphs + valid.braces + valid.parentheses;
+
+      if (chessCheck2.toMove == "W") {
+        valid.clickText = chessCheck2.moveCount + ". " + valid.clickText;
+        valid.clickFigurine = chessCheck2.moveCount + ". " + valid.clickFigurine;
+        valid.numClickText = valid.clickText;
+        valid.numClickFigurine = valid.clickFigurine;
+      }
+      else {
+        valid.numClickText = chessCheck2.moveCount + "... " + valid.clickText;
+        valid.numClickFigurine = chessCheck2.moveCount + "... " + valid.clickFigurine;
+        if (variationStart) {
+          valid.clickText = valid.numClickText;
+          valid.clickFigurine = valid.numClickFigurine;
+        }
+      }
+      valid.isMainLine = false;
+      moves.push(valid);
+      parent = valid;
+      variationStart = false;
+      chessCheck2.makeMove(valid);
+      if (until && moves.length >= until) return chessCheck2.fen;
+    }
+    //chessCheck2 = null;
+    //console.log(moves);
+    if (boolOut) return 1;
+    return moves;
+  }
+
+  //New member function of PgnParser: paragraph format invoked in PgnViewer by pgnParser.moves2Html(pgnParser.loadGame(idx), "English", "Paragraph")
+	this.moves2Html = function(moves, symbol, format) {
+		/*to add character parameter:
+		"English" KQRBN(P) = default moves and pgn formatting
+		"Figurine"	♔♕♖♗♘♙
+		(future language sets:)
+		Spanish/Italian		RDTAC(P)
+		French		RDTFC(P)
+		German		KDTLS(B)
+		Russian		КрФЛСК(П)
+		*/
+		let output = '';
+		let resumeLine = true;
+		let depth = 0;
+		switch(format) {
+			case "Paragraph":
+				output = '<span class="movenode" id="mvi0">&gt;</span>';
+				for (let i = 1; i < moves.length; i++) {//moves.length
+					if (moves[moves[i].parent].children.length > 1) {
+						if (moves[moves[i].parent].children[0] == i) output += ' ';		//eldest child
+						else {																												//younger child
+							output += ' (';
+							++depth;
+							resumeLine = true;	//next move should use number
+						}
+					}
+					else output += ' ';																							//only child
+					if (resumeLine) {
+						resumeLine = false;
+						output += '<span class="movenode" id="mvi' + i + '">';
+						if (symbol == "Figurine") output += moves[i].numClickFigurine + '</span>';
+						if (symbol == "English") output += moves[i].numClickText + '</span>';
+					}
+					else {
+						output += '<span class="movenode" id="mvi' + i + '">';
+						if (symbol == "Figurine") output += moves[i].clickFigurine + '</span>';
+						if (symbol == "English") output += moves[i].clickText + '</span>';
+					}
+					if (moves[i].children.length == 0 && depth > 0) { //won't parenthesize main line
+						output += ')';
+						--depth;
+						resumeLine = true;	//next move should use number
+					}
+				}
+				//console.log(output);
+				return output;
+			break;
+			case "List":
+				var lines = [];
+				lines.push([]);
+				var tails = {}; // object better because array will have gaps if index is integer
+				var knits = [];
+				var grooms = {};
+				for (var i = 0; i < moves.length; i++) {
+					const index = i;
+					var onLine = 0;
+					var moveClickText = symbol == "Figurine" ? moves[i].clickFigurine : moves[i].clickText;
+					if (index in grooms) {
+						moveClickText = symbol == "Figurine" ? moves[i].numClickFigurine : moves[i].numClickText;
+						onLine = grooms[index];
+						lines[onLine].push('<li class="movenode" id="mvi' + i + '">' + moveClickText + '&nbsp;</li>');
+						tails[index] = onLine;
+					}
+					else {
+						// add this move to existing tail
+						onLine = index == 0 ? 0 : tails[moves[index].parent];
+						lines[onLine].push('<li class="movenode" id="mvi' + i + '">' + moveClickText + '&nbsp;</li>');
+						tails[index] = onLine;
+					}
+					if (moves[i].children.length > 1) {
+						const placeheld = lines[onLine].length;
+						lines[onLine].push("Place Held");
+						knits.push({parentLine: onLine, position: placeheld, childLines: []});
+						for (var k = 0; k < moves[i].children.length; k++) {
+							const kindex = moves[i].children[k];
+							const newLine = lines.length;
+							lines.push([]);
+							grooms[kindex] = newLine;
+							knits[knits.length - 1].childLines.push(newLine);
+						}
+					}
+				}
+				//console.log("lines", lines, "knits", knits);
+				// knitting goes here
+				for (var m = knits.length - 1; m >=0; m--) {
+					var variations = [];
+					for (var n = 0; n < knits[m].childLines.length; n++) {
+						variations.push('<li><ul>' + lines[knits[m].childLines[n]].join('') + '</ul></li>'); //Here for Expanding Menu
+					}
+					lines[knits[m].parentLine][knits[m].position] = '<ol type="A">' + variations.join('') + '</ol>';
+				}
+				//console.log(lines[0]);
+				output = '<ul className="movelist">' + lines[0].join('') + '</ul>';
+				return output;
+			break;
+			case "Table":
+				output = '\n\t<table class="chessScore"><tbody>';
+				for (let i = 1; i < moves.length; i++) {//moves.length
+					let fen = moves[i].fenBefore;
+					let lastSpace = fen.lastIndexOf(' ');
+					let movenum = fen.substr(lastSpace + 1) * 1;
+					if (moves[moves[i].parent].children.length > 1 && moves[moves[i].parent].children[0] != i) { //younger sibs get variations
+						++depth;
+						resumeLine = true;	//next move should use number
+					}
+					//eldest and only child don't affect table?
+					let moveText = moves[i].sanPrintable;
+					if (symbol == "Figurine") moveText = moveText.replace(/K/g, '♔').replace(/N/g, '♘').replace(/B/g, '♗').replace(/R/g, '♖').replace(/Q/g, '♕');
+					moveText += this.nagsToGlyphs(moves[i].nags);
+					if (i == moves.length - 1) {
+						let result = this.games[this.currentGameIndex].Result == '1/2-1/2' ? 'Drawn' : 'Resigns';
+						if (moves[i].color == "W") moveText += '</td><td>' + result + '</td></tr></tbody></table>';
+						else moveText += '</td></tr><tr class="mainline"><td></td><td>' + result + '</td><td></td></tr></tbody></table>';
+					}
+					if (moves[i].preamble) moveText = moves[i].preamble + '<br />' + moveText;
+					if (moves[i].braces) {
+						let comment = moves[i].braces.trim().substr(1, moves[i].braces.length - 3).replace(/  /g, '<br /><br />').replace(/_(.+)_/g, '<u>$1</u>');
+						if (moves[i].color == "W") {
+	//							console.log("White comment on " + movenum);
+							moveText += '</td><td></td></tr>\n\t</tbody></table>\n\t<p>' + comment + '</p>';
+							if (i < moves.length - 1) moveText += '\n\t<table class="chessScore"><tbody>\n\t\t<tr class="mainline"><td>' + movenum + '</td><td>. . .</td>';
+						}
+						else {
+	//							console.log("Black comment on " + movenum);
+							moveText += '</td></tr>\n\t</tbody></table>\n\t<p>' + comment + '</p>';
+							if (i < moves.length - 1) moveText += '\n\t<table class="chessScore"><tbody>';
+						}
+						//moveText += '<br />' + moves[i].braces;
+					}
+					let format = depth == 0 ? "mainline" : "variation";
+					if (resumeLine) {
+						resumeLine = false;
+						if (moves[i].color == "B") {
+							output += '\n\t\t<tr class="' + format + '"><td>' + movenum + '</td><td>...</td><td span class="movenode" data-index="' + i + '">' + moveText + '</td></tr>';
+						}
+						else {
+							output += '\n\t\t<tr class="' + format + '"><td>' + movenum + '</td><td class="movenode" data-index="' + i + '">' + moveText + '</td>';
+						}
+					}
+					else {
+						if (moves[i].color == "W") {
+							output += '\n\t\t<tr class="' + format + '"><td>' + movenum + '</td><td class="movenode" data-index="' + i + '">' + moveText + '</td>';
+						}
+						else {
+							output += '<td class="movenode" data-index="' + i + '">' + moveText + '</td></tr>';
+						}
+					}
+					if (moves[i].children.length == 0 && depth > 0) { //won't parenthesize main line
+						--depth;
+						resumeLine = true;	//next move should use number
+					}
+				}
+				output += '\n\t</tbody></table>';
+				return output;
+			break;
+		}
+	}
+  
+  this.movesToOrderedList = function(moves) {
+    let lines = [];
+    lines.push([]);
+    let tails = {};
+    let knits = []; //
+    let grooms = {}; //array of the indeces of lines to look at later
+    let skip = false;
+
+    for (let j = 0; j < moves.length; ++j) {
+      let index = j;
+      let onLine = 0;
+      let moveClickText = moves[j].clickText;
+
+      if (index in grooms) {
+        moveClickText = moves[j].numClickText;
+        onLine = grooms[index];
+
+        let extraclass = "";
+        if(moves[j].isMainLine) //This makes all moves open. This is not the correct behavior
+        // t.classList.toggle("open");
+          extraclass = " main";
+        //lines[onLine].push('<li class="movenode" id="mvi' + index + '">' + moveClickText + '</li>');
+        lines[onLine].push('<li class="movenode' + extraclass + '" id="mvi' + index + '">' + moveClickText + '</li>');
+        tails[index] = onLine;
+      }
+      else {
+        onLine = index == 0 ? 0 : tails[moves[index].parent];
+
+        let extraclass = "";
+        if(moves[j].isMainLine) //This makes all moves open
+          extraclass = " main";
+        //lines[onLine].push('<li class="movenode" id="mvi' + index + '">' + moveClickText + '</li>');
+        lines[onLine].push('<li class="movenode' + extraclass + '" id="mvi' + index + '">' + moveClickText + '</li>');
+        tails[index] = onLine;
+      }
+
+      if (moves[j].children.length > 1) {
+        let placeheld = lines[onLine].length;
+        lines[onLine].push("Place Held"); //a place to hold a branch
+        knits.push({parentLine: onLine, position: placeheld, childLines: []}); // instructions on how to put the branch in
+        //Tell the children how to find the parent
+
+        for (let k = 0; k < moves[j].children.length; ++k) { //iterate over all children in current branch
+          let kindex = moves[j].children[k];
+          let newLine = lines.length; 
+          lines.push([]);
+          grooms[kindex] = newLine; //array of the indeces of lines to look at later
+          knits[knits.length - 1].childLines.push(newLine); //tell the parent how to find the children
+        }
+      }
+    }
+    //console.log(lines);
+    
+    for (let m = knits.length - 1; m >= 0; --m) {
+      let variations = '';
+      for (let n = 0; n < knits[m].childLines.length; ++n) {
+        if(n == 0){
+           variations += '<li> Variations: Lvl ' + (m+1) + ', Type ' + String.fromCharCode(65 + n) + ' <ul class="collapsible">' + lines[knits[m].childLines[n]] + '</ul></li>';
+        } else {
+          variations += '<li> Variations: Lvl ' + (m+1) + ', Type ' + String.fromCharCode(65 + n) + ' <ul class="collapsible">' + lines[knits[m].childLines[n]] + '</ul></li>'; //class="collapsible"
+        }
+      }
+      //if (knits[m].childLines.length > 0)
+      lines[knits[m].parentLine][knits[m].position] = '<ul>' + variations + '</ul>'; //'<ol type="A">' + variations + '</ol>'
+      //lines[knits[m].parentLine][knits[m].position] = '<ul>' + variations + '</ul>';
+    }
+
+    //let movelist = lines[0].join(''); 
+
+
+    let movelist = '<ul class="movelist">' + lines[0].join('') + '</ul>'; //The UL on the top
+    //.substr(38) used to trim off caret. function caller can trim the return.
+    movelist = movelist.replace(/<\/li>,</g, '</li><');
+    return movelist;
+  }
+}
+
+//var pgnParser = new PgnParser(); likely will break something. Oh well.
+</script>
+<script type="text/javascript">
+/********************************************************
+PgnViewer: a new modular jQuery-based interface script to select, navigate,
+illustrate and animate PGN files similar to the way ChessTrainer does in React, but with jQuery.
+In other words, this is the client-facing version of PgnParser.
+Proof-of-concept to be able to browse games as embedded code in Reno Chess Club's new Google Site.
+
+It is constructed in the style of a widget.
+Dependencies:
+ECMA script version 6 (especially using the new class syntax and the tick-enclosed template literal)
+jQuery 3.6.0 from the Content Delivery Network
+ChessChecker a custom object for handling Moves and Board positions, checking board legalities
+PgnParser a custom object for parsing Portable Game Notation files
+ASCII chess pieces or possibly embedded pngs from Base64 encoding
+
+It should paint regions of a gamelist, a board, and a movelist,
+and a navigator control for both board and gamelist.
+Since PgnParser is a data factory of game headers and move lists,
+we'll enclose it in PgnViewer as member this.data and utilize
+	this.data.gameHeaders for all headers throughout the pgn file
+	this.data.moves for currently parsed game
+	this.data.parseFile() for fetching an external file
+	this.data.parseText() for parsing variable text
+
+TODO:
+xWrite get/set into class because we're having to do it non-OO from outside.
+Try deployment to Sites
+Incorporate React branching algorithm
+jQuery UI Animation?
+Start binding selections: gamelist to game, movelist to board
+Pseudocode:
+xIf gameListSelect changes, then get the value of the new option and then load that game into movelist and board, prepare for next/previous game in keyboard
+xif moveList changes, use the jumpTo model and try to use it on move parent-child relationships so that the next/previous move keyboard codes can re-use
+xSee React class ChessScore for branching variations.
+xSee React animate referencesX4 for animating moves forward and back
+Consider https://elmah.io/tools/base64-image-encoder/ for base64 image encoding for better piece sets.
+********************************************************/
+
+// Global chess engine instance
+let chessEngine = null;
+
+// Engine control functions
+function analyzePosition() {
+  if (!chessEngine) {
+    chessEngine = new ChessEngine();
+    chessEngine.init((message, type) => {
+      const output = document.getElementById('EngineOutput');
+      const line = document.createElement('div');
+      line.className = 'engine-line ' + type;
+      line.textContent = message;
+      output.appendChild(line);
+      output.scrollTop = output.scrollHeight;
+    });
+  }
+  
+  const fen = document.getElementById('fen').value;
+  const depth = document.getElementById('engineDepth').value;
+  
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('stopBtn').disabled = false;
+  
+  chessEngine.analyze(fen, depth);
+}
+
+function stopAnalysis() {
+  if (chessEngine) {
+    chessEngine.stop();
+  }
+  document.getElementById('analyzeBtn').disabled = false;
+  document.getElementById('stopBtn').disabled = true;
+}
+
+// UI Customization functions
+function applyCustomization() {
+  const lightSquare = document.getElementById('lightSquareColor').value;
+  const darkSquare = document.getElementById('darkSquareColor').value;
+  const highlight = document.getElementById('highlightColor').value;
+  const font = document.getElementById('fontFamily').value;
+  const theme = document.getElementById('movesPanelTheme').value;
+  
+  document.documentElement.style.setProperty('--light-square', lightSquare);
+  document.documentElement.style.setProperty('--dark-square', darkSquare);
+  document.documentElement.style.setProperty('--highlight-color', highlight);
+  document.documentElement.style.setProperty('--primary-font', font);
+  
+  // Apply move panel theme
+  const themes = {
+    dark: { bg: '#223554', text: '#ffffff' },
+    light: { bg: '#f8f9fa', text: '#212529' },
+    blue: { bg: '#1e3a5f', text: '#e3f2fd' },
+    green: { bg: '#1b4332', text: '#d8f3dc' }
+  };
+  
+  if (themes[theme]) {
+    document.documentElement.style.setProperty('--move-panel-bg', themes[theme].bg);
+    document.documentElement.style.setProperty('--move-panel-text', themes[theme].text);
+  }
+}
+
+function resetDefaults() {
+  document.getElementById('lightSquareColor').value = '#f0d9b5';
+  document.getElementById('darkSquareColor').value = '#b58863';
+  document.getElementById('highlightColor').value = '#ffff00';
+  document.getElementById('fontFamily').value = "'Bitter', serif";
+  document.getElementById('movesPanelTheme').value = 'dark';
+  applyCustomization();
+}
+
+class PgnViewer {
+	constructor(jQueryDOM, pgnFilename, pgnLiteral) { //gameHeaders is an array of one-liner shorthands for all games. initialGame are the pgn header array for one game, initialMoveList is an array of complex move objects of one game ready to be rendered.
+		let proxy = new Proxy(this, this.handleKeyDown);
+		this.LIGHT = "#f0d9b5";	// Better contrast
+		this.DARK  = "#b58863";	// Better contrast
+		this.PIECES = {
+			"k": "&#9818;",
+			"q": "&#9819;",
+			"r": "&#9820;",
+			"b": "&#9821;",
+			"n": "&#9822;",
+			"p": "&#9823;",
+			"t": "&nbsp;"
+		};
+		this.GRIDSIZE = 40;
+		this.KEYS = {
+			BACKSPACE	: 8,	//bad browser effects; alternate Page Up for previous game
+			TAB				: 9,	//bad browser effects; alternate Page Down for next game
+			ENTER			:13,	//bad browser effects; not used here
+			SPACEBAR	:32,	//bad browser effect;  for play/pause
+			PAGE_UP		:33,
+			PAGE_DOWN	:34,
+			END				:35,
+			HOME			:36,
+			LEFT			:37,
+			UP				:38,
+			RIGHT			:39,
+			DOWN			:40,
+			F					:70,
+			P					:80
+		};
+
+		this.gameIndex = 0;
+		this.currentMoveIndex = 0;
+		this.animating = false;
+		this.autoplay = false;
+		this.flipped = false;
+		//console.log(this.currentGame, this.currentMoveList);
+		
+		//method bindings to preserve this keyword
+		this.handleKeyDown = this.handleKeyDown.bind(this);
+		this.handleMoveClick = this.handleMoveClick.bind(this);
+		this.selectGame = this.selectGame.bind(this);
+		this.handleButtonClick = this.handleButtonClick.bind(this);
+		
+		this.data = new PgnParser();
+		//this.handleButtonClick = this.handleButtonClick(this);
+		
+
+		let self = this;	//need to branch based on null file
+		if (typeof(pgnFilename) != "undefined" && pgnFilename) {
+			this.data.loadFile(pgnFilename,
+			function() {
+				self.currentGame = self.data.games[self.gameIndex];
+				let moves = self.data.loadGame(0);
+        
+				self.currentBoard = new ChessChecker(moves[0].fenBefore);
+
+				//render the whole interface
+				$("#GameListPanel").html(self.refreshGameListHtml());
+				$("#CoordinatesTop").html(self.refreshCoordinatesTopHtml());
+				$("#CoordinatesLeft").html(self.refreshCoordinatesLeftHtml());
+				$("#MoveMarker").html(self.refreshMoveMarkerHtml());
+
+				//event binding
+				$(document).keydown(self.handleKeyDown);
+				$(document).on("change", "#SelectGame", self.selectGame);
+				//$(document).on("click", ".movenode", self.handleMoveClick); //makes it active, move it after addToggles
+				$(document).click(self.handleButtonClick);
+				$(document).on("focus", "#fen", function(){
+					$(this).select();
+				});
+
+				self.selectGame();
+        $(document).on("click", ".movenode", self.handleMoveClick);
+        
+        // Initialize customization
+        self.initializeCustomization();
+			});
+		}
+		else if (typeof(pgnLiteral) != "undefined" && pgnLiteral) {
+			this.data.parseGames(pgnLiteral, null,
+			function() {
+				self.currentGame = self.data.games[self.gameIndex];
+				let moves = self.data.loadGame(0);
+				self.currentBoard = new ChessChecker(moves[0].fenBefore);
+
+				//render the whole interface
+				$("#GameListPanel").html(self.refreshGameListHtml());
+				$("#CoordinatesTop").html(self.refreshCoordinatesTopHtml());
+				$("#CoordinatesLeft").html(self.refreshCoordinatesLeftHtml());
+				$("#MoveMarker").html(self.refreshMoveMarkerHtml());
+
+				//event binding
+				$(document).keydown(self.handleKeyDown);
+				$(document).on("change", "#SelectGame", self.selectGame);
+				//$(document).on("click", ".movenode", self.handleMoveClick); //makes it active, move it after addToggles
+				$(document).click(self.handleButtonClick);
+				$(document).on("focus", "#fen", function(){
+					$(this).select();
+				});
+
+				self.selectGame();
+        $(document).on("click", ".movenode", self.handleMoveClick);
+        
+        // Initialize customization
+        self.initializeCustomization();
+			});
+		}
+		else {
+			console.log("Case 3! NO DATA!");
+		}
+	}
+
+  initializeCustomization() {
+    // Set up event listeners for customization controls
+    $('#lightSquareColor, #darkSquareColor, #highlightColor, #fontFamily, #movesPanelTheme').on('change', function() {
+      applyCustomization();
+    });
+  }
+
+  markMainLine() { // This function marks each main move as being the main line and therefore the original game if the child is the first child
+    // something is adding class "undefined", now all moves are called open and we don't want that.
+    let move = this.data.moves[0];
+
+    while (move && move.children && move.children.length > 0) { // Added checks
+      move.isMainLine = true;
+      move = this.data.moves[move.children[0]]; // Move to the next child
+      //console.log(move);
+    }
+    
+    if (move) { // Ensure move is defined before marking
+      move.isMainLine = true;
+    }
+  }
+
+  //All Board Movement Functions
+
+	setGameIndex(index) {
+		this.gameIndex = index;
+		//this.currentGame = pgnHeaders;
+		//this.currentMoveList = moveList;
+		this.currentMoveIndex = 0;
+		this.currentBoard = new ChessChecker(this.data.moves[this.currentMoveIndex].fenBefore);
+		this.animating = false;
+		this.autoplay = false;
+	}
+
+	refreshGameListHtml() {
+		let html = '<select id="SelectGame">';
+		for (let i = 0; i < this.data.gameHeaders.length; ++i) {
+			html += '<option value="' + i + '"' + (i==0 ? ' selected="selected"' : '') + '>' + this.data.gameHeaders[i] + '</option>';
+		}
+		html += '</select>';
+		return html;
+	}
+
+	refreshCoordinatesTopHtml() {
+		let html = '<tr>';
+		for (let i = 1; i <= 8; ++i) {
+			html += '<td>' + (this.flipped ? "hgfedcba".substr(i-1, 1) : "abcdefgh".substr(i-1, 1)) + '</td>';
+		}
+		html += '</tr>';
+		return html;
+	}
+
+	refreshCoordinatesLeftHtml() {
+		let html = '';
+		for (let i = 1; i <= 8; ++i) {
+			html += '<tr><td>' + (this.flipped ? i : 9-i) + '</td></tr>';
+		}
+		return html;
+	}
+
+	refreshMoveMarkerHtml() {
+		//Truth table		flipped	toMove=="W"
+		//								F					T				marker lower
+		//								F					F				marker higher
+		//								T					T				marker higher
+		//								T					F				marker lower
+		//console.log(this.flipped, this.currentBoard.toMove);
+		if (this.currentBoard.toMove == "W" ? !this.flipped : this.flipped) {
+			return '<tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td>&#9632;</td></tr><tr><td></td></tr>';
+		}
+		else {
+			return '<tr><td></td></tr><tr><td>&#9632;</td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr>';
+		}
+	}
+
+	refreshBoardHtml() {
+		let html = '<table class="board"><tbody>';
+		for (let i = 0; i < 64; ++i ) {
+			if (i % 8 == 0) html += '<tr>';
+			let index = this.flipped ? 63 - i : i;
+			let squareClass = (i % 2 + Math.floor(i/8)) % 2 == 0 ? 'light' : 'dark';
+			let col = this.currentBoard.squares[index].substr(0, 1) == "W" ? "white" : "black";
+			let type = this.currentBoard.squares[index].substr(1, 1).toLowerCase();
+			let pc = this.PIECES[type];
+			//console.log(type, pc);
+			html += '<td class="sq ' + squareClass + '" style="color: ' + col + '"><span id="pc' + index + '">' + pc + '</span></td>';
+			if (i % 8 == 7) html += '</tr>';
+		}
+		html += '</tbody></table>';
+		//if start and finis are not same, then animate the next move.
+		return html;
+	}
+
+	refreshHeader() {
+		let html = '<table class="GameHeader"><tbody>';
+		html += '<tr><td>Event</td><td colspan="2">' + this.data.games[this.gameIndex].Event + '</td></tr>';
+		html += '<tr><td>Site</td><td colspan="2">' + this.data.games[this.gameIndex].Site + '</td></tr>';
+		html += '<tr><td>Date</td><td>' + this.data.games[this.gameIndex].Date + '</td><td>Rd ' + this.data.games[this.gameIndex].Round + '</td></tr>';
+		html += '<tr><td>White</td><td><b>' + this.data.games[this.gameIndex].White + '</b></td><td>' + this.data.games[this.gameIndex].WhiteElo + '</td></tr>';
+		html += '<tr><td>Black</td><td><b>' + this.data.games[this.gameIndex].Black + '</b></td><td>' + this.data.games[this.gameIndex].BlackElo + '</td></tr>';
+		html += '</tbody></table>';
+		return html;
+	}
+
+	refreshMoveListHtml() {
+		let html = '';
+		for (let i = 0; i < this.currentMoveList.length; ++i) {
+			html += '<div class="move" id="mv' + i + '">' + this.currentMoveList[i].clickText + '</div>';
+		}
+		return html;
+	}
+
+	jumpToMoveIndex(index) {
+		let fr = this.data.moves[index].start;
+		let to = this.data.moves[index].finis;
+		let frcol = fr % 8;
+		let frrow = Math.floor(fr/8);
+		let tocol = to % 8;
+		let torow = Math.floor(to/8);
+		let vectory = (torow - frrow) * this.GRIDSIZE;
+		let vectorx = (tocol - frcol) * this.GRIDSIZE;
+		if (this.flipped) {
+			vectory *= -1;
+			vectorx *= -1;
+		}
+		this.currentBoard = new ChessChecker(this.data.moves[index].fenBefore);
+		$("#BoardPanel").html(this.refreshBoardHtml());
+		$("#MoveMarker").html(this.refreshMoveMarkerHtml());
+		$("#fen").val(this.currentBoard.fen);
+		
+    // Update engine position
+    if (chessEngine && chessEngine.ready) {
+      chessEngine.setPosition(this.currentBoard.fen);
+    }
+    
+		//console.log($("#pc" + fr).html(), $("#pc" + to).html());
+		$("#pc" + fr).css("zIndex", 3000);
+		this.animating = true;
+		let self = this;
+		$("#pc" + fr).animate({top: vectory + "px", left: vectorx + "px"}, 500, function() {
+			if (fr != to) self.currentBoard.makeMove(self.data.moves[index]); // clicks on root node cause tomove to flip
+			$("#BoardPanel").html(self.refreshBoardHtml());
+			$("#MoveMarker").html(self.refreshMoveMarkerHtml());
+			$("#fen").val(self.currentBoard.fen);
+      
+      // Update engine position after move
+      if (chessEngine && chessEngine.ready) {
+        chessEngine.setPosition(self.currentBoard.fen);
+      }
+      
+			self.animating = false;
+			self.highlightMove();
+			if (!self.data.moves[self.currentMoveIndex].children[0]) self.autoplay = false;
+			if (self.autoplay) $("#nextMove").trigger("click");
+		});
+	}
+
+	rewind(index) {
+		let fr = this.data.moves[index].start;
+		let to = this.data.moves[index].finis;
+		let frcol = fr % 8;
+		let frrow = Math.floor(fr/8);
+		let tocol = to % 8;
+		let torow = Math.floor(to/8);
+		let vectory = (frrow - torow) * this.GRIDSIZE;
+		let vectorx = (frcol - tocol) * this.GRIDSIZE;
+		if (this.flipped) {
+			vectory *= -1;
+			vectorx *= -1;
+		}
+		this.currentBoard = new ChessChecker(this.data.moves[index].fenBefore);
+		this.currentBoard.makeMove(this.data.moves[index]);
+		$("#fen").val(this.currentBoard.fen);
+		$("#BoardPanel").html(this.refreshBoardHtml());
+		$("#MoveMarker").html(this.refreshMoveMarkerHtml());
+		$("#pc" + to).css("zIndex", 3000);
+		this.animating = true;
+		let self = this;
+		$("#pc" + to).animate({top: vectory + "px", left: vectorx + "px"}, 500, function() {
+			self.currentBoard = new ChessChecker(self.data.moves[index].fenBefore);
+			$("#fen").val(self.currentBoard.fen);
+			self.highlightMove();
+			$("#BoardPanel").html(self.refreshBoardHtml());
+			$("#MoveMarker").html(self.refreshMoveMarkerHtml());
+      
+      // Update engine position
+      if (chessEngine && chessEngine.ready) {
+        chessEngine.setPosition(self.currentBoard.fen);
+      }
+      
+			self.animating = false;
+		});
+	}
+
+	highlightMove() {
+		$(".movenode").removeClass("highlight");
+		$("#mvi" + this.currentMoveIndex).addClass("highlight");
+	}
+
+	selectGame() {
+		let idx = $("#SelectGame").val();
+		this.data.moves = this.data.loadGame(idx);
+    //let output = this.data.moves2Html(this.data.moves, "English", "Paragraph"); // Moved to its own variable, output
+    this.markMainLine();
+    console.log(this.data.moves);
+    let output = this.data.movesToOrderedList(this.data.moves); // Moved to its own variable, output
+    //let firstChild = this.data.moves[this.currentMoveIndex].children[0]; //(this.data.moves)
+    
+
+		//console.log(this.data.moves);
+		this.setGameIndex(idx);
+    //Added Undefined Error Handling
+		$("#HeaderPanel").html(this.refreshHeader());
+		if (output.trim() === "") {
+      console.error("Generated HTML is empty!");
+    } else {
+      $("#MoveListPanel").html(output);
+      this.addToggles();
+    }
+    // iterate through all movenodes and find first child. Open first child: addClass("open");
+
+
+		//Constructor and this manual setting overlap a lot because of their dependency on pgnParser, likely code consolidation here into setGameIndex cascade
+		$("#BoardPanel").html(this.refreshBoardHtml());
+		$("#MoveMarker").html(this.refreshMoveMarkerHtml());
+		$("#fen").val(this.currentBoard.fen);
+    
+    // Clear engine output when changing games
+    const engineOutput = document.getElementById('EngineOutput');
+    if (engineOutput) {
+      engineOutput.innerHTML = 'Engine output will appear here...';
+    }
+    
+		this.highlightMove();
+	}
+
+	handleKeyDown(event) {
+		switch(event.which) {
+			case this.KEYS.SPACEBAR: case this.KEYS.P:
+				if (this.autoplay) this.autoplay = false;
+				else {
+					this.autoplay = true;
+					let firstChild = this.data.moves[this.currentMoveIndex].children[0];
+					if (firstChild) {
+						this.currentMoveIndex = firstChild;
+						this.jumpToMoveIndex(this.currentMoveIndex);
+					}
+				}
+			break;
+		}
+		if (!this.animating) {
+			switch(event.which) {
+				case this.KEYS.PAGE_UP: case this.KEYS.UP: case this.KEYS.BACKSPACE:
+					if (this.gameIndex > 0) {
+						$("#SelectGame").val($("#SelectGame").val() * 1 - 1);
+						this.selectGame();
+					}
+				break;
+				case this.KEYS.HOME:
+					this.currentMoveIndex = 0;
+					this.jumpToMoveIndex(this.currentMoveIndex);
+				break;
+				case this.KEYS.LEFT:
+					if (this.data.moves[this.currentMoveIndex].parent !== null) {
+						this.rewind(this.currentMoveIndex);
+						this.currentMoveIndex = this.data.moves[this.currentMoveIndex].parent;
+					}
+				break;
+				case this.KEYS.RIGHT:
+					let firstChild = this.data.moves[this.currentMoveIndex].children[0];
+					if (firstChild) {
+						this.currentMoveIndex = firstChild;
+						this.jumpToMoveIndex(this.currentMoveIndex);
+					}
+				break;
+				case this.KEYS.END:
+					this.currentMoveIndex = this.data.moves.length - 1;
+					this.jumpToMoveIndex(this.currentMoveIndex);
+				break;
+				case this.KEYS.PAGE_DOWN: case this.KEYS.DOWN: case this.KEYS.TAB:
+					if (this.gameIndex < this.data.gameHeaders.length - 1) {
+						$("#SelectGame").val($("#SelectGame").val() * 1 + 1);
+						this.selectGame();
+					}
+				break;
+				case this.KEYS.F:
+					this.flipped = !this.flipped;
+					$("#CoordinatesTop").html(this.refreshCoordinatesTopHtml());
+					$("#CoordinatesLeft").html(this.refreshCoordinatesLeftHtml());
+					$("#BoardPanel").html(this.refreshBoardHtml());
+					$("#MoveMarker").html(this.refreshMoveMarkerHtml());
+				break;
+			}
+			event.preventDefault(); // Let's stop this event.
+			event.stopPropagation(); // Really this time.
+		}
+	}
+
+	handleButtonClick(event) {
+		//console.log(event);
+		let button = event.target.id;
+		switch(button) {
+			case "autoplay":
+				if (this.autoplay) this.autoplay = false;
+				else {
+					this.autoplay = true;
+					let firstChild = this.data.moves[this.currentMoveIndex].children[0];
+					if (firstChild) {
+						this.currentMoveIndex = firstChild;
+						this.jumpToMoveIndex(this.currentMoveIndex);
+					}
+				}
+			break;
+		}
+		if (!this.animating) {
+			switch(button) {
+				case "prevGame":
+					if (this.gameIndex > 0) {
+						$("#SelectGame").val($("#SelectGame").val() * 1 - 1);
+						this.selectGame();
+					}
+				break;
+				case "frstMove":
+					this.currentMoveIndex = 0;
+					this.jumpToMoveIndex(this.currentMoveIndex);
+				break;
+				case "prevMove":
+					if (this.data.moves[this.currentMoveIndex].parent !== null) {
+						this.rewind(this.currentMoveIndex);
+						this.currentMoveIndex = this.data.moves[this.currentMoveIndex].parent;
+					}
+				break;
+				case "nextMove":
+					let firstChild = this.data.moves[this.currentMoveIndex].children[0];
+					if (firstChild) {
+						this.currentMoveIndex = firstChild;
+						this.jumpToMoveIndex(this.currentMoveIndex);
+					}
+				break;
+				case "lastMove":
+					this.currentMoveIndex = this.data.moves.length - 1;
+					this.jumpToMoveIndex(this.currentMoveIndex);
+				break;
+				case "nextGame":
+					if (this.gameIndex < this.data.gameHeaders.length - 1) {
+						$("#SelectGame").val($("#SelectGame").val() * 1 + 1);
+						this.selectGame();
+					}
+				break;
+				case "flip":
+					this.flipped = !this.flipped;
+					$("#CoordinatesTop").html(this.refreshCoordinatesTopHtml());
+					$("#CoordinatesLeft").html(this.refreshCoordinatesLeftHtml());
+					$("#BoardPanel").html(this.refreshBoardHtml());
+					$("#MoveMarker").html(this.refreshMoveMarkerHtml());
+				break;
+			}
+		}
+	}
+
+	handleMoveClick(event) {
+		console.log(event);
+		let index = event.target.id.substr(3) * 1;
+    if(index) {
+		this.currentMoveIndex = index;
+		this.jumpToMoveIndex(index);
+    } 
+	}
+
+  addToggles = function() {
+    for (let i of document.querySelectorAll(".collapsible ol, .collapsible ul")) {
+      
+      let t = document.createElement("div");
+      t.innerHTML = i.previousSibling.textContent;
+
+      if(i.previousSibling.id != undefined){
+        t.id = i.previousSibling.id;
+      }
+      else {
+        if(t.textContent.includes('Type A'))
+          t.classList.add("open");
+      }
+      t.classList.add("toggle");
+      t.classList.add("movenode");
+
+      if (i.previousSibling.classList && i.previousSibling.classList.contains("main"))
+      {
+        t.classList.add("open");
+      }
+      
+      t.innerHTML += '<span class = "newarrow"> &#x27A4; </span>';
+      //t.innerHTML = t.innerHTML 
+      
+    
+      let self = this;
+      //console.log('Addtoggles Execute');
+
+      //if (t.children)
+      //  t.children[0].classlist.toggle("open"); //opens the main game
+      //console.log(t.classList);
+      t.onclick = function (i) {
+        if(t)
+          t.classList.toggle("open"); //toggle on click
+      } 
+
+      //if(i.children[0])
+      //  i.children[0].classList.add("open");
+
+      //let newli = document.createElement("li");
+      //newli.classname = "toggle-wrapper"
+      //newli.appendChild(t);
+
+      // 1. Remove the old item
+      i.parentElement.removeChild(i.previousSibling);
+
+      // 2. insert div into DOM
+
+      i.parentElement.insertBefore(t, i);
+      
+    }
+  }
+
+}
+
+
+</script>
+<script type="text/javascript">
+$(document).ready(function() {
+	console.log("jQuery 3.6.0 from CDN ready!");
+	let pgnFilename = null; //can't figure out how to link Google Site to Drive file without CORS violation
+
+	//API: pgnViewer = new PgnViewer(domContainer, pgnFilename (null to use pgnLiteral), pgnLiteral ENCLOSED BY TICKS!);
+	let pgnViewer = new PgnViewer($("#PgnViewerPlaceholder"), pgnFilename, `
+[Event "United States Championship"]
+[Site "Saint Louis, MO USA"]
+[Date "2024.10.16"]
+[EventDate "2024.10.11"]
+[Round "5.5"]
+[Result "0-1"]
+[White "Christopher Yoo"]
+[Black "Fabiano Caruana"]
+[ECO "A04"]
+[WhiteElo "2590"]
+[BlackElo "2796"]
+[PlyCount "96"]
+
+1. Nf3 c5 2. c4 b6 3. Nc3 Bb7 4. e4 e6 5. d4 cxd4 6. Nxd4 Nf6 7. Bd3 Nc6 8.
+Nxc6 dxc6 9. e5 Nd7 10. Bf4 Qc7 11. Qe2 O-O-O 12. Bg3 h5 13. Bh4 Nxe5 14.
+Bxd8 Nxd3+ 15. Qxd3 Qxd8 16. O-O-O Qc7 17. Kb1 Be7 18. Rhe1 g6 19. g3 Kb8
+20. Qe3 Ba6 21. b3 Bc8 22. f4 h4 23. Qe5 f6 24. Qe3 hxg3 25. hxg3 e5 26.
+fxe5 fxe5 27. Rh1 Bc5 28. Qg5 Rxh1 29. Rxh1 Qd6 30. g4 Qd3+ 31. Kb2 Bd4 32.
+Rc1 a5 33. a4 Qe4 34. Qf6 Kc7 35. g5 Qd3 36. Qe7+ Kb8 37. Qd6+ Kb7 38. Qe7+
+Ka6 39. b4 Qxc4 40. Qe8 Qxb4+ 41. Ka2 Qc4+ 42. Kb2 Kb7 43. Qe7+ Kb8 44.
+Qd6+ Ka8 45. Qxg6 Be6 46. Rc2 Qa2+ 47. Kc1 Be3+ 48. Kd1 Bg4+ 0-1
+
+[Event "United States Championship"]
+[Site "Saint Louis, MO USA"]
+[Date "2024.10.23"]
+[EventDate "2024.10.11"]
+[Round "11.3"]
+[Result "1-0"]
+[White "Fabiano Caruana"]
+[Black "Sam Shankland"]
+[ECO "B95"]
+[WhiteElo "2796"]
+[BlackElo "2677"]
+[PlyCount "120"]
+
+1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6 6. Bg5 e6 7. Qf3 h6 8.
+Bd2 Qb6 9. Nb3 Qc7 10. a4 b6 11. Bd3 Bb7 12. O-O Nbd7 13. Rae1 Be7 14. Kh1
+h5 15. Bg5 h4 16. h3 Rh5 17. Bf4 Ne5 18. Qd1 Rh8 19. Qd2 Nfd7 20. Bg5 f6
+21. Be3 Nc4 22. Bxc4 Qxc4 23. f3 Rc8 24. Qf2 Qc7 25. Rd1 Kf7 26. Rd2 Bc6
+27. Nd4 Ne5 28. b3 g5 29. Nce2 Bd7 30. c4 Qb7 31. Nc3 Ng6 32. Rfd1 Rc7 33.
+Nde2 b5 34. cxb5 axb5 35. Bb6 Rc6 36. a5 Rb8 37. Qe3 Rxb6 38. axb6 Qxb6 39.
+Nd4 b4 40. Na4 Qa7 41. Nb2 Nf4 42. Nd3 Rc8 43. Nxf4 gxf4 44. Qe1 e5 45. Nf5
+Bxf5 46. exf5 Qd7 47. Qe4 Kg7 48. Rd5 Kh6 49. Qxb4 Qxf5 50. Qb7 Bf8 51. b4
+Rc3 52. Qa8 Rc8 53. Qa7 Rc3 54. Qf2 Kh5 55. b5 Qc8 56. Qb2 Qc4 57. Qb1 Kh6
+58. b6 Rb3 59. Qf5 Kg7 60. Ra5 1-0
+
+[Event "Club Game"]
+[White "Dave!"]
+[Black "Krause, S."]
+[Site "Reno, Nevada"]
+[Result "0-1"]
+[Date "2024.11.14"]
+[ECO "A35"]
+[PlyCount "20"]
+
+1. Nf3 c5 2. c4 Nc6 3. Nc3 Nf6 4. e3 g6 5. b3 Bg7 6. Bb2 O-O 7. h3 {I am not sure why this was played. There is no reason why Black would want to put a piece on g4 at this moment, so it makes more sense to develop a piece because the King is not yet safe.  It is not a blunder, but it does not appear to be part of a plan.} (7. Be2 {Makes a lot more sense to me as the d-pawn wants to be pushed and the King will be safest on the Kingside, so castling is next.} {Let's see how it looks if Black plays the same moves as in the game.} b6 8. O-O d6 9. Qc2 Bf5 10. d3 (10. e4 Nxe4 11. Nxe4 Bxb2 12. Qxb2 Bxe4)) 7... b6 (7... e5 {was missed by Black.}) 8. Qc2 d6 (8... e6 {is a little better as Black would like to try and take over the center with ...Bb7 and ...d5.}) 9. O-O-O $2 {White castles into Black's attack. Black wants to play his Bishop to f5, when both his Bishops are then pointing at White's King with sinister intentions. Black also has pawns advancing on the Queenside, much closer to opening lines against White's King.} (9. Be2 {is still good here.}) (9. e4 $2 {does not work because White's King is still in the center and Black can begin an attack against him before he can escape:} e6 $1 10. d3 d5 $1 {To get his King to safety, White is going to give up a pawn or leave his King stranded in the center, probably getting checkmated. Or he can be smothered. Let's take a look at a few ways this could go.} 11. O-O-O (11. cxd5 exd5 12. e5 (12. Nxd5 Nxd5 13. Bxg7 Kxg7 14. exd5 Qxd5 15. Be2 Re8 16. O-O Bb7) 12... Re8 13. Be2 Nxe5 14. Nxe5 Rxe5 15. O-O d4) (11. Rd1 d4 {Smothered!}) 11... d4 {Smothered! Look at how hard it is for White to move his pieces to decent squares. Black can take his time organizing his pieces, then open White's King position and get to the King beef.}) (9. g4) 9... Bf5 ({It is very educational to see how the computer plays this attack.} 9... e5 $1 {First taking away White's ability to get his own pieces into play by preventing White's d4.} 10. Be2 d5 $1 11. cxd5 Nxd5 12. Nxd5 Qxd5 13. Bc4 Qd6 14. Qd3 Qe7 $1 {Black wants to keep Queens on the board to keep his attacking advantage, and now threatens to fork the Queen and Knight or gain a tempo by pushing White's Queen around with ...Rd8.} 15. Qc3 Rb8 $1 16. h4 b5 17. Be2 c4 $1 {Black wants to peel away the layers of pawns and pieces to get at that juicy King beef.} 18. e4 {Trying to prevent ...Bf5.} ({Because it is a computer, it will find some really crazy things.} 18. Kb1 Bf5+ 19. Ka1 Rfc8 20. Rc1 cxb3 21. Qxb3 Be6 22. Qa3 Qxa3 $1 23. Bxa3 e4+ 24. Nd4 Nxd4 25. Rxc8+ Rxc8 26. exd4 Rc2 $1 27. Bb2 Rxd2) 18... Nd4 $1 19. Nxd4 (19. Bf1 cxb3 20. axb3 Be6) 19... exd4 20. Qg3 Bb7 21. d3 (21. f3 cxb3 22. axb3 d3 23. Bxd3 Qc5+ 24. Kb1 Bxb2 25. Kxb2 Qd4+ 26. Kc2 Rbc8+) 21... c3) 10. Bd3 $4 {A tactical oversight.} (10. d3 Nb4 (10... e5 $2 {Now that Black has his Bishop on f5, this move is a mistake because White can get his attack going with} 11. g4 $1) 11. Qd2 {Black still has an advantage as he is fully developed and is starting his attack, but at least White has not dropped a piece.} (11. Qb1 {is better, the computer says.})) 10... Nb4 {This game ended too soon, but there is still plenty we can get out of it by examining how the attack could have played out. Some notes about the game: 1. I would like to have seen 7.Be2 instead of 7.h3, focusing on development and King safety. 2. The move 7.h3 was not part of a plan of development. It may have been a move made on "autopilot." 3. Generally, the King is safest on the Kingside, and least safe when uncastled. This barely a rule because there are so many conditions and exceptions to it, but King safety is extremely important, and when we think about it more, we win more games! 4. This is a big one: PRACTICE YOUR TACTICS. Everything we do in chess is subject to the tactics of that specific position. Until you are around expert strength, there is really nothing that will make as big a difference as this.   If one simply focuses on developing pieces with a plan in the opening, getting the King safe, and practicing tactics, one will see tremendous results.  In response to your questions: 1. "1.N-KB3 - I'm sick of this move." N-KB3/Nf3 is pretty difficult because you are essentially telling Black to go ahead and pick the opening. You may want to explore 1.e4 or 1.d4 and see if you like those better as they allow you to develop your pieces clearly and easily and get your King safe quickly. 8. "Q-B2..." was bad. It was not bad by itself; overlooking 10...N-N5/Nb4 was the problem! 9. "0-0-0 - why not play P-KN4?" I don't like either of these moves because your King is safest on the Kside in this position where Black's pawns and pieces are attacking on the Queenside. You are attacted to 0-0-0 and P-KN4 because of your love of those Sicilian attacks! But this is not the appropriate position for 0-0-0 after you play 2. P-QB4/c4. That move is more about the center and Queenside and is going to make it easier for the opponent to get at your King.} 0-1
+
+[Event "Reno Chess Club"]
+[White "Dave"]
+[Black "Poor, Unfortunate Soul"]
+[Site "?"]
+[Round "?"]
+[Annotator "Chinnici,Tony"]
+[Result "0-1"]
+[Date "2024.09.07"]
+[ECO "B21"]
+[PlyCount "76"]
+[GameId "2087312151857500"]
+[SourceVersionDate "2024.08.24"]
+
+{This game will explore the opening a LOT. I am very interested in the Morra as it one of the very few unrefuted, true gambits that is likely to give the gambiteer the position s/he wants. Most gambits are tricky, but when your opponent knows the tricks, s/he can navigate the opening and just be ahead a pawn, probably leaving the gambiteer with a position s/he was NOT hoping for.} 1. e4 c5 2. d4 cxd4 3. c3 (3. Nf3 e5 4. c3 {is also interesting.} (4. Nxe5 $4 Qa5+) (4. Bc4 Nc6 5. O-O Bc5 6. c3 {is also "for real," though I don't think these "versions" of the Morra Gambit have names.})) 3... dxc3 4. Nxc3 Nc6 {This is basically the last "book" move played in the game. It is move 4. If White is going to play a gambit, he should have some idea of why; otherwise, he is just donating you a pawn. The Morra Gambit is very dangerous if Black does not know what to do--as long as White knows what to do!} 5. Be3 {Already a slightly inferior move. It is usually better to develop Knights first because we almost always know they are going to be best on c3 and f3. Maybe the Bishop wants to be on g5 or g4, but we have now spent a move placing it on e3, meaning if it is better elsewhere, we have wasted a move. Also, White knows he is going to 0-0, and playing 5.Nf3 makes that happen much sooner. This takes away potential tricks related to the K being on e1 - checks, pins.} (5. Nf3 e6 6. Bc4 a6 7. O-O d6 $1 (7... Nge7 8. Bg5 f6 9. Be3 b5 10. Bb3 Bb7 (10... Ng6 11. Nd5 $1 {is the terrifying line in this opening. The computer finds it almost instantly. It is an example of why the Morra Gambit can be so dangerous once the player understands it.} (11. Nd4 {is a quieter way to play.}))) (7... Be7 8. Nd5 $1) 8. Bf4 Nf6 9. Qe2 Be7 10. Rfd1 Qc7 11. Rac1 O-O 12. Bb3 (12. h3 b5 $2 13. Nd5 $1) 12... e5 $5 (12... b5 13. Nd5 $1 exd5 14. exd5 Bf5 (14... Bb7 $2 15. dxc6) 15. dxc6 Rfe8 16. Nd4 Bg6 {White has his pawn back, and Black is doomed: the passed pawn on c6 is very strong-protected by pieces and close to Queening.}) (12... Re8 {Black carefully makes moves that avoid weaknesses and tricks while White tries to dominate the center using his space advantage and better pieces. The missing c-pawn gives White's second Rook a great line, making it hard for Black to find a good place for his Queen.} {Even now} 13. Nd5 $5 {is extremely dangerous.}) (12... Bd7 $2 13. e5 dxe5 14. Nxe5) (12... Qb8 $1 13. Na4 (13. Nd5 {No longer works as there is no longer a pin.} exd5 14. exd5 Ne5) 13... b5 14. Rxc6 bxa4 15. Bxa4 Bd7 16. Rc4 Bxa4 17. Rxa4 Qb5 18. Qxb5 axb5 19. Rxa8 Rxa8) 13. Nd5 Nxd5 14. exd5 exf4 15. Qe4 $1 {The pin is not going to disappear, so White improves a piece.} Qd7 16. dxc6 bxc6 17. Qxf4 {Although Black is ahead a pawn, White's remaining pieces are much better than Black's, which are tied to the defense of the huddled mass at d6 and c6.} (17. Qxc6 $6 Qxc6 18. Rxc6 Be6 {White is a pawn ahead.})) 5... Nf6 6. Qb3 $2 (6. Nf3) ({The computer also likes} 6. f4 {but then the idea of using checks and pins appears:} Qa5 {threatening the e-pawn.} 7. e5 Ne4 8. Nge2 e6 {and I don't think most of us are excited about being White here after playing a gambit.}) 6... e6 {At this point, Black is ahead by a full pawn as White has frittered away the pressure he would have had on the center by placing his pieces properly.} 7. Bb5 $2 {This is not a pin and does not further White's pressure on the center. Black can continue to calmly develop his pieces without worry, and will have great winning chances with his extra pawn.} (7. Nf3 {again.}) 7... Be7 {Good move. Black just does his thang.} (7... Ng4 $1 {is something we humans could probably find:} 8. Bf4 (8. Nf3 Nxe3) 8... Qb6 9. Nh3 Nd4 10. Qa4 a6 11. Bd3 Qxb2) 8. Nge2 (8. Nf3 {is better. White is not planning to get this Knight to f4, and there is no pin on his other Knight.}) 8... O-O 9. O-O a6 $1 10. Bxc6 (10. Qa4 Rb8 11. Bxc6 (11. Bd3 b5) 11... bxc6) 10... bxc6 11. Bb6 (11. Rac1 {It is better to try to get the other pieces into play and apply pressure with the Rooks.}) 11... Qe8 12. Bc7 (12. e5 {is a little better, trying to hold back the big center Black is threatening to roll down the board.} Nd5 13. Bd4 a5 14. Rfe1 Ba6) 12... d5 $1 13. e5 Ng4 $1 (13... Nd7 {is also excellent, but has less style than 13...Ng4} 14. Na4 c5 15. Nb6 Ra7 16. Nxd7 Qxd7 17. Ba5 Qb5 18. Qxb5 axb5 {Black has beautiful pawns, including a protected passed pawn on d5, along with the Two Bishops while pawns are on both sides of the board. Black is winning.}) 14. Na4 a5 15. Bd6 {It has become very hard for White to find moves.} (15. Qg3 Nh6 16. Rfc1 Nf5 17. Qc3 Qd7 18. Nb6 Qxc7 19. Nxa8 Qa7) 15... Bxd6 16. exd6 Bd7 (16... Qd8 17. Qg3 Nf6 18. Nd4 Ne4 19. Qf4 Qe8 {threatening a fork on e5.}) 17. Qg3 Nh6 $1 18. Nc5 Nf5 19. Qa3 Nxd6 20. Nd4 Nc4 21. Qc3 Qe7 22. b3 (22. Nxd7 Qxd7 23. b3) 22... Qxc5 $1 {Best move!} 23. bxc4 Qxc4 24. Rfc1 Qxc3 25. Rxc3 Rfc8 26. Rc5 e5 27. Nb3 a4 28. Na5 Ra6 29. f3 Rb8 30. Rac1 Rb5 31. Nxc6 Rxc5 32. Ne7+ Kf8 33. Rxc5 Kxe7 34. Rxd5 f6 35. Kf2 Be6 36. Rd2 a3 37. Kg3 Rb6 38. Rd3 Rb2 {Very nicely played. I think you understood the position better than your opponent AND out-calculated them.} 0-1
+
+
+
+`);
+});
+</script>
+</body>
+</html>
