@@ -42,6 +42,9 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      background-color: #f2f2f2;
+      padding: 1rem;
+      border-radius: 0.5rem;
     }
 
     .chessboard {
@@ -54,7 +57,9 @@
       border: 3px solid var(--primary-dark-color);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
       margin-bottom: 1rem;
-      background-color: #f0d9b5;
+      background-color: #ccb89a;
+      position: relative;
+      z-index: 1;
     }
 
     .square {
@@ -67,15 +72,15 @@
     }
 
     .square.light {
-      background-color: #f0d9b5;
+      background-color: #ccb89a;
     }
 
     .square.dark {
-      background-color: #b58863;
+      background-color: #9a7454;
     }
 
     .square.highlight {
-      background-color: rgba(255, 255, 0, 0.4);
+      background-color: rgba(255, 255, 0, 0.2);
     }
 
     /* Make non-pawn pieces 15% larger */
@@ -179,7 +184,13 @@
       background-color: white;
     }
 
-    .load-btn {
+    .pgn-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .load-btn, .clear-btn {
       background-color: var(--secondary-color);
       color: var(--primary-color);
       border: 2px solid var(--secondary-color);
@@ -189,10 +200,10 @@
       cursor: pointer;
       transition: all 0.3s;
       font-weight: bold;
-      width: 100%;
+      flex: 1;
     }
 
-    .load-btn:hover {
+    .load-btn:hover, .clear-btn:hover {
       background-color: var(--accent-color);
       border-color: var(--primary-dark-color);
     }
@@ -248,34 +259,6 @@
       font-size: 0.9rem;
     }
 
-    .comment-panel {
-      background-color: rgba(166, 101, 63, 0.1);
-      border: 2px solid var(--secondary-color);
-      border-radius: 0.5rem;
-      padding: 1rem;
-      margin-top: 1rem;
-      width: 100%;
-      max-width: 500px;
-      display: none;
-    }
-
-    .comment-panel.active {
-      display: block;
-    }
-
-    .comment-panel h3 {
-      margin: 0 0 0.5rem 0;
-      color: var(--secondary-color);
-      font-size: 1.1rem;
-    }
-
-    .comment-text {
-      color: var(--primary-dark-color);
-      font-size: 0.95rem;
-      line-height: 1.5;
-      font-style: italic;
-    }
-
     .moves-display {
       background-color: white;
       border: 2px solid var(--accent-color);
@@ -285,6 +268,9 @@
       max-height: 500px;
       overflow-y: auto;
       font-family: monospace;
+      font-size: 0.95rem;
+      line-height: 1.8;
+      letter-spacing: normal;
     }
 
     .move-number {
@@ -296,7 +282,7 @@
     .move {
       display: inline-block;
       padding: 0.25rem 0.5rem;
-      margin: 0.25rem;
+      margin: 0.15rem;
       cursor: pointer;
       border-radius: 0.25rem;
       transition: background-color 0.2s;
@@ -308,8 +294,40 @@
     }
 
     .move.current {
+      background-color: var(--accent-color);
+      color: var(black); /*--primary-color*/
+      font-weight: bold;
+    }
+
+    .move.variation {
+      background-color: rgba(166, 101, 63, 0.15);
+      font-style: italic;
+    }
+
+    .move.variation:hover {
       background-color: var(--secondary-color);
       color: var(--primary-color);
+    }
+
+    .variation-group {
+      display: inline-block;
+      margin-left: 1rem;
+      padding: 0.25rem;
+      border-left: 2px solid var(--accent-color);
+      padding-left: 0.5rem;
+    }
+
+    .move-comment {
+      display: inline;
+      color: #666;
+      font-style: italic;
+      font-size: 0.9em;
+      margin-left: 0.25rem;
+      margin-right: 0.25rem;
+    }
+
+    .last-move {
+      background-color: rgba(217, 161, 113, 0.3) !important;
       font-weight: bold;
     }
 
@@ -320,6 +338,19 @@
       border-radius: 0.5rem;
       margin: 1rem 0;
       border: 2px solid #c0392b;
+    }
+
+    .footer-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      max-width: 600px;
+      margin: 2rem auto 1rem;
+    }
+
+    .footer-buttons .button1,
+    .footer-buttons .button5 {
+      flex: 1;
     }
 
     @media (max-width: 968px) {
@@ -385,12 +416,6 @@
                 <p id="analysisBestMove">Best move: --</p>
                 <p id="analysisDepth">Depth: 0</p>
             </div>
-
-            <!-- Comment Panel under the analysis -->
-            <div id="commentPanel" class="comment-panel">
-                <h3>Move Comment</h3>
-                <div id="commentText" class="comment-text"></div>
-            </div>
         </div>
 
         <!-- Moves Section -->
@@ -409,7 +434,10 @@
 [Black &quot;Player 2&quot;]
 
 1. e4 e5 2. Nf3 Nc6 3. Bb5..."></textarea>
-                <button class="load-btn" id="loadBtn">Load Game</button>
+                <div class="pgn-buttons">
+                    <button class="load-btn" id="loadBtn">Load Game</button>
+                    <button class="clear-btn" id="clearBtn">Clear</button>
+                </div>
             </div>
 
             <div id="gameInfo" class="game-info" style="display: none;"></div>
@@ -419,13 +447,9 @@
     </div>
 </div>
 
-<div class="grid-container">
-    <a class="button1" href="Events.html">Events</a>
-    <a class="button2" href="About.html">About</a>
-    <a class="button3" href="Calendar.html">Calendar</a>
-    <a class="button4" href="News.html">News</a>
+<div class="footer-buttons">
+    <a class="button1" href="index.html">Home</a>
     <a class="button5" href="Contact.html">Contact</a>
-    <a class="button6" href="New_to_chess.html">New to Chess?</a>
 </div>
 
 <footer>
@@ -435,7 +459,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 <script>
 // ============================================================
-// GAME DATABASE - Add your games here
+// GAME DATABASE
 // ============================================================
 const GAME_DATABASE = [
     {
@@ -473,6 +497,20 @@ const GAME_DATABASE = [
 [Result "1-0"]
 
 1. e4 e5 2. Nf3 d6 3. d4 Bg4 4. dxe5 Bxf3 5. Qxf3 dxe5 6. Bc4 Nf6 7. Qb3 Qe7 8. Nc3 c6 9. Bg5 b5 10. Nxb5 cxb5 11. Bxb5+ Nbd7 12. O-O-O Rd8 13. Rxd7 Rxd7 14. Rd1 Qe6 15. Bxd7+ Nxd7 16. Qb8+ Nxb8 17. Rd8# 1-0`
+    },
+    {
+        name: "Club Qualifier - 2026 (Reno Chess Club)",
+        pgn: `[Event "Club Qualifier"]
+[Site "Reno Chess Club"]
+[Date "2026.02.05"]
+[Round "4"]
+[White "Eli Kaufman"]
+[Black "A. Gold"]
+[Result "0-1"]
+[TimeControl "g/90 +30"]
+[Link "https://www.chess.com/analysis/game/pgn/2rLPpFYJqt/analysis?move=43"]
+
+1. c4 {So much for the anticipated Jobava.} 1... c6 2. d4 d5 3. Nc3 Nf6 4. cxd5 cxd5 5. f3 {Certainly one way to make the exchange Slav exciting.} 5... e6 6. e4 Bb4 7. e5 Nfd7 8. Be3 O-O 9. f4 f6 {With Black being better developed, I thought opening the position was called for. The engine rolls its eyes.} 10. Qg4 Qe7 {Holds the pawn, communicates with the bishop, reinforces the second rank. Man, the engine is a harsh mistress.} ({The engine notes} 10... Qa5 11. Qxe6+ $4 Kh8 12. Qh3 Bxc3+ 13. bxc3 Qxc3+) 11. Nf3 b6 (11... Nb6 12. a3 Nc4) 12. Bd3 (12. Rc1 Ba6 13. a3 Bxc3+ 14. Rxc3 Bxf1 15. Rxf1 Na6 $14) 12... Ba6 13. Bxh7+ $2 Kxh7 14. Qh5+ Kg8 15. Nh4 {When I had played 12 Ba6, I had looked at the bishop sac, but had not considered Nh4. So I guessed I needed to consider what Ng6 could bring.} 15... Bxc3+ (15... Nc6 16. Ng6 Bxc3+ {transposes, though I didn't see it at the time.}) 16. bxc3 Qa3 17. Ng6 Nc6 (17... Rc8 {seemed materialistic. Instead, I complete development.}) 18. f5 {And the Kid goes for broke.} (18. Bd2 fxe5) 18... fxe5 19. Qh8+ Kf7 20. Nxf8 Rxf8 21. Qh5+ Kg8 22. fxe6 Qxc3+ 0-1`
     }
 ];
 
@@ -498,23 +536,175 @@ const pieces = {
 // Global Variables
 // ============================================================
 let chess = new Chess();
-let moves = [];
-let currentMoveIndex = -1;
+let gameTree = null;
+let currentNode = null;
 let gameInfo = {};
 let isFlipped = false;
 let analysisEnabled = false;
 let engineWorker = null;
 let engineReady = false;
-let moveComments = {}; // Store comments for each move
 
 // ============================================================
-// Stockfish Integration using Blob Web Worker
+// PGN Parser - Creates hierarchical game tree
+// ============================================================
+class GameNode {
+    constructor(move = null, preComment = null, postComment = null, parent = null) {
+        this.move = move;
+        this.preComment = preComment;
+        this.postComment = postComment;
+        this.parent = parent;
+        this.children = [];
+        this.variations = [];
+        this.fen = null;
+    }
+    
+    addChild(node) {
+        this.children.push(node);
+        return node;
+    }
+    
+    addVariation(node) {
+        this.variations.push(node);
+        return node;
+    }
+}
+
+function parsePGNHeaders(pgn) {
+    const headerRegex = /\[(\w+)\s+"([^"]+)"\]/g;
+    const info = {};
+    let match;
+    
+    while ((match = headerRegex.exec(pgn)) !== null) {
+        info[match[1]] = match[2];
+    }
+    
+    return info;
+}
+
+function parsePGNMoves(pgn) {
+    const movesText = pgn.replace(/\[.*?\]\s*/g, '');
+    const root = new GameNode();
+    root.fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    
+    const tokens = tokenizePGN(movesText);
+    buildGameTree(root, tokens, 0);
+    
+    return root;
+}
+
+function tokenizePGN(text) {
+    const tokens = [];
+    let i = 0;
+    
+    while (i < text.length) {
+        while (i < text.length && /\s/.test(text[i])) i++;
+        if (i >= text.length) break;
+        
+        if (text[i] === '{') {
+            const start = i + 1;
+            i++;
+            while (i < text.length && text[i] !== '}') i++;
+            tokens.push({ type: 'comment', value: text.substring(start, i).trim() });
+            i++;
+        }
+        else if (text[i] === '(') {
+            tokens.push({ type: 'var_start' });
+            i++;
+        }
+        else if (text[i] === ')') {
+            tokens.push({ type: 'var_end' });
+            i++;
+        }
+        else if (text[i] === '$') {
+            const start = i;
+            i++;
+            while (i < text.length && /\d/.test(text[i])) i++;
+            tokens.push({ type: 'nag', value: text.substring(start, i) });
+        }
+        else if (/\d/.test(text[i])) {
+            while (i < text.length && /[\d.]/.test(text[i])) i++;
+        }
+        else {
+            const start = i;
+            while (i < text.length && /[a-zA-Z0-9+#=\-]/.test(text[i])) i++;
+            const value = text.substring(start, i);
+            
+            if (['1-0', '0-1', '1/2-1/2', '*'].includes(value)) {
+                tokens.push({ type: 'result', value });
+            } else {
+                tokens.push({ type: 'move', value });
+            }
+        }
+    }
+    
+    return tokens;
+}
+
+function buildGameTree(node, tokens, index) {
+    const tempChess = new Chess(node.fen);
+    let pendingPreComment = null;
+    let i = index;
+    
+    while (i < tokens.length) {
+        const token = tokens[i];
+        
+        if (token.type === 'comment') {
+            pendingPreComment = token.value;
+            i++;
+        }
+        else if (token.type === 'move') {
+            try {
+                const move = tempChess.move(token.value);
+                if (move) {
+                    // Check if next token is a comment (post-comment)
+                    let postComment = null;
+                    if (i + 1 < tokens.length && tokens[i + 1].type === 'comment') {
+                        postComment = tokens[i + 1].value;
+                        i++; // Skip the comment token
+                    }
+                    
+                    const childNode = new GameNode(move, pendingPreComment, postComment, node);
+                    childNode.fen = tempChess.fen();
+                    node.addChild(childNode);
+                    node = childNode;
+                    pendingPreComment = null;
+                }
+            } catch (e) {
+                console.error('Invalid move:', token.value, e);
+            }
+            i++;
+        }
+        else if (token.type === 'var_start') {
+            if (node.parent) {
+                const varNode = new GameNode(null, null, null, node.parent);
+                varNode.fen = node.parent.fen;
+                node.parent.addVariation(varNode);
+                i = buildGameTree(varNode, tokens, i + 1);
+            } else {
+                i++;
+            }
+        }
+        else if (token.type === 'var_end') {
+            return i + 1;
+        }
+        else if (token.type === 'result') {
+            i++;
+        }
+        else {
+            i++;
+        }
+    }
+    
+    return i;
+}
+
+// ============================================================
+// Stockfish Integration
 // ============================================================
 function startEngine() {
     try {
         document.getElementById('analysisStatus').textContent = 'Loading engine...';
         
-        // Load Stockfish as a Blob Web Worker to avoid CDN CORS restrictions
         const sfUrl = 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js';
         const blob = new Blob(['importScripts("' + sfUrl + '");'], {type: 'application/javascript'});
         engineWorker = new Worker(URL.createObjectURL(blob));
@@ -525,7 +715,6 @@ function startEngine() {
         
         engineWorker.onerror = function(e) {
             document.getElementById('analysisStatus').textContent = 'Error: ' + e.message;
-            console.error('Engine error:', e);
         };
         
         engineWorker.postMessage('uci');
@@ -538,36 +727,30 @@ function startEngine() {
 }
 
 function parseEngineOutput(message) {
-    // Engine is ready
     if (message === 'readyok') {
         engineReady = true;
         document.getElementById('analysisStatus').textContent = 'Engine ready';
         
-        // Analyze current position if analysis is enabled
         if (analysisEnabled) {
             analyzePosition();
         }
         return;
     }
     
-    // Parse info lines
     if (message.startsWith('info')) {
-        // Parse depth
         const depthMatch = message.match(/\sdepth (\d+)/);
         if (depthMatch) {
             document.getElementById('analysisDepth').textContent = `Depth: ${depthMatch[1]}`;
             document.getElementById('analysisStatus').textContent = `Analyzing... depth ${depthMatch[1]}`;
         }
         
-        // Parse score in centipawns
         const scoreMatch = message.match(/score cp (-?\d+)/);
         if (scoreMatch) {
-            let centipawns = parseInt(scoreMatch[1]);
+            const centipawns = parseInt(scoreMatch[1]);
             const pawns = (centipawns / 100).toFixed(2);
             document.getElementById('analysisEval').textContent = `Evaluation: ${pawns > 0 ? '+' : ''}${pawns}`;
         }
         
-        // Parse mate score
         const mateMatch = message.match(/score mate (-?\d+)/);
         if (mateMatch) {
             const mateIn = parseInt(mateMatch[1]);
@@ -578,14 +761,12 @@ function parseEngineOutput(message) {
             }
         }
         
-        // Parse best move from PV line
         const pvMatch = message.match(/pv ([a-h][1-8][a-h][1-8][qrbn]?)/);
         if (pvMatch) {
             document.getElementById('analysisBestMove').textContent = `Best move: ${pvMatch[1]}`;
         }
     }
     
-    // Parse final best move
     if (message.startsWith('bestmove')) {
         const moveMatch = message.match(/bestmove ([a-h][1-8][a-h][1-8][qrbn]?)/);
         if (moveMatch) {
@@ -598,11 +779,18 @@ function parseEngineOutput(message) {
 function analyzePosition() {
     if (!engineWorker || !analysisEnabled || !engineReady) return;
     
-    const fen = chess.fen();
+    // Get the FEN from currentNode if available, otherwise use starting position
+    const fen = currentNode ? currentNode.fen
+        : 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    
     document.getElementById('analysisStatus').textContent = 'Analyzing...';
+    document.getElementById('analysisEval').textContent = 'Evaluation: --';
+    document.getElementById('analysisBestMove').textContent = 'Best move: --';
+    document.getElementById('analysisDepth').textContent = 'Depth: 0';
     
     try {
         engineWorker.postMessage('stop');
+        engineWorker.postMessage('ucinewgame');
         engineWorker.postMessage('position fen ' + fen);
         engineWorker.postMessage('go depth 45');
     } catch (error) {
@@ -632,7 +820,7 @@ function toggleAnalysis() {
         }
     } else {
         btn.classList.remove('active');
-        btn.textContent = '🔍 Analysis';
+        btn.textContent = '✓ Analysis';
         panel.classList.remove('active');
         
         if (engineWorker) {
@@ -642,17 +830,316 @@ function toggleAnalysis() {
 }
 
 // ============================================================
-// Comment Display Functions
+// Display Functions
 // ============================================================
-function updateCommentDisplay() {
-    const commentPanel = document.getElementById('commentPanel');
-    const commentText = document.getElementById('commentText');
+function displayGameInfo(info) {
+    const gameInfoDiv = document.getElementById('gameInfo');
+    let hasInfo = false;
+    let html = '';
     
-    if (currentMoveIndex >= 0 && moveComments[currentMoveIndex]) {
-        commentText.textContent = moveComments[currentMoveIndex];
-        commentPanel.classList.add('active');
+    if (info.Event) {
+        html += `<p><strong>Event:</strong> ${info.Event}</p>`;
+        hasInfo = true;
+    }
+    if (info.White) {
+        html += `<p><strong>White:</strong> ${info.White}</p>`;
+        hasInfo = true;
+    }
+    if (info.Black) {
+        html += `<p><strong>Black:</strong> ${info.Black}</p>`;
+        hasInfo = true;
+    }
+    if (info.Result) {
+        html += `<p><strong>Result:</strong> ${info.Result}</p>`;
+        hasInfo = true;
+    }
+    if (info.Date) {
+        html += `<p><strong>Date:</strong> ${info.Date}</p>`;
+        hasInfo = true;
+    }
+    if (info.Site) {
+        html += `<p><strong>Site:</strong> ${info.Site}</p>`;
+        hasInfo = true;
+    }
+    
+    if (hasInfo) {
+        gameInfoDiv.innerHTML = html;
+        gameInfoDiv.style.display = 'block';
     } else {
-        commentPanel.classList.remove('active');
+        gameInfoDiv.style.display = 'none';
+    }
+}
+
+function displayMoves() {
+    const movesDiv = document.getElementById('movesDisplay');
+    movesDiv.innerHTML = '';
+    
+    if (!gameTree) return;
+    
+    displayMovesRecursive(gameTree, movesDiv, 1, false);
+}
+
+function displayMovesRecursive(node, container, moveNumber, isVariation) {
+    node.children.forEach((child, index) => {
+        // Display pre-comment if exists
+        if (child.preComment) {
+            const preCommentSpan = document.createElement('span');
+            preCommentSpan.className = 'move-comment';
+            preCommentSpan.textContent = child.preComment + ' ';
+            container.appendChild(preCommentSpan);
+        }
+        
+        // Display move number for white moves
+        if (child.move.color === 'w') {
+            const numSpan = document.createElement('span');
+            numSpan.className = 'move-number';
+            numSpan.textContent = `${moveNumber}.`;
+            container.appendChild(numSpan);
+        } else if (index === 0 && isVariation) {
+            const numSpan = document.createElement('span');
+            numSpan.className = 'move-number';
+            numSpan.textContent = `${moveNumber}...`;
+            container.appendChild(numSpan);
+        }
+        
+        // Display the move
+        let moveClass = 'move' + (isVariation ? ' variation' : '');
+        if (child === currentNode) {
+            moveClass += ' current';
+        }
+        
+        const moveSpan = document.createElement('span');
+        moveSpan.className = moveClass;
+        moveSpan.textContent = child.move.san;
+        moveSpan.onclick = () => goToNode(child);
+        container.appendChild(moveSpan);
+        
+        // Display post-comment if exists
+        if (child.postComment) {
+            const postCommentSpan = document.createElement('span');
+            postCommentSpan.className = 'move-comment';
+            postCommentSpan.textContent = child.postComment + ' ';
+            container.appendChild(postCommentSpan);
+        }
+        
+        // Display variations immediately after this move
+        child.variations.forEach(varNode => {
+            const varDiv = document.createElement('span');
+            varDiv.className = 'variation-group';
+            container.appendChild(varDiv);
+            
+            varDiv.appendChild(document.createTextNode('('));
+            displayMovesRecursive(varNode, varDiv, 
+                child.move.color === 'w' ? moveNumber : moveNumber + 1, true);
+            varDiv.appendChild(document.createTextNode(') '));
+        });
+        
+        // Continue with main line
+        const nextMoveNumber = child.move.color === 'b' ? moveNumber + 1 : moveNumber;
+        displayMovesRecursive(child, container, nextMoveNumber, isVariation);
+    });
+}
+
+// ============================================================
+// Board Functions
+// ============================================================
+function initBoard() {
+    const board = document.getElementById('chessboard');
+    board.innerHTML = '';
+    
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+            const square = document.createElement('div');
+            const actualRow = isFlipped ? row : 7 - row;
+            const actualCol = isFlipped ? 7 - col : col;
+            
+            square.className = 'square ' + ((actualRow + actualCol) % 2 === 0 ? 'light' : 'dark');
+            square.dataset.row = actualRow;
+            square.dataset.col = actualCol;
+            board.appendChild(square);
+        }
+    }
+    
+    updateBoard();
+}
+
+function updateBoard() {
+    const squares = document.querySelectorAll('.square');
+    
+    // Use currentNode FEN if available, otherwise show starting position
+    const fen = currentNode
+        ? currentNode.fen
+        : 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    
+    chess.load(fen);
+    const position = chess.board();
+    
+    squares.forEach(square => {
+        square.innerHTML = '';
+        square.classList.remove('highlight');
+    });
+    
+    // Highlight the last move if one exists
+    if (currentNode && currentNode.move) {
+        const fromSquare = currentNode.move.from;
+        const toSquare = currentNode.move.to;
+        
+        const fromFile = fromSquare.charCodeAt(0) - 97;
+        const fromRank = parseInt(fromSquare[1]) - 1;
+        const toFile = toSquare.charCodeAt(0) - 97;
+        const toRank = parseInt(toSquare[1]) - 1;
+        
+        const fromRow = isFlipped ? fromRank : 7 - fromRank;
+        const fromCol = isFlipped ? 7 - fromFile : fromFile;
+        const toRow = isFlipped ? toRank : 7 - toRank;
+        const toCol = isFlipped ? 7 - toFile : toFile;
+        
+        squares[fromRow * 8 + fromCol].classList.add('highlight');
+        squares[toRow * 8 + toCol].classList.add('highlight');
+    }
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+            const piece = position[row][col];
+            if (piece) {
+                const actualRow = isFlipped ? 7 - row : row;
+                const actualCol = isFlipped ? 7 - col : col;
+                const index = actualRow * 8 + actualCol;
+                
+                const pieceChar = piece.color === 'w' ? piece.type.toUpperCase() : piece.type;
+                const pieceData = pieces[pieceChar];
+                
+                if (pieceData) {
+                    const pieceSpan = document.createElement('span');
+                    pieceSpan.textContent = pieceData.symbol;
+                    pieceSpan.className = 'piece-' + pieceData.type;
+                    squares[index].appendChild(pieceSpan);
+                }
+            }
+        }
+    }
+}
+
+// ============================================================
+// Navigation Functions
+// ============================================================
+function goToNode(node) {
+    currentNode = node;
+    updateBoard();
+    displayMoves();
+    updateButtons();
+    
+    if (analysisEnabled && engineReady) {
+        analyzePosition();
+    }
+}
+
+function goToStart() {
+    if (gameTree) {
+        currentNode = gameTree;
+        updateBoard();
+        displayMoves();
+        updateButtons();
+        
+        if (analysisEnabled && engineReady) {
+            analyzePosition();
+        }
+    }
+}
+
+function goToPrevious() {
+    if (currentNode && currentNode.parent) {
+        goToNode(currentNode.parent);
+    }
+}
+
+function goToNext() {
+    if (currentNode && currentNode.children.length > 0) {
+        goToNode(currentNode.children[0]);
+    }
+}
+
+function goToEnd() {
+    if (!currentNode) return;
+    
+    let node = currentNode;
+    while (node.children.length > 0) {
+        node = node.children[0];
+    }
+    goToNode(node);
+}
+
+function flipBoard() {
+    isFlipped = !isFlipped;
+    initBoard();
+}
+
+function updateButtons() {
+    document.getElementById('startBtn').disabled = !currentNode || !currentNode.parent;
+    document.getElementById('prevBtn').disabled = !currentNode || !currentNode.parent;
+    document.getElementById('nextBtn').disabled = !currentNode || currentNode.children.length === 0;
+    document.getElementById('endBtn').disabled = !currentNode || currentNode.children.length === 0;
+}
+
+// ============================================================
+// Load Game
+// ============================================================
+function stripCommentsFromPGN(pgn) {
+    let cleaned = pgn.replace(/\{[^}]*\}/g, '');
+    cleaned = cleaned.replace(/\s+/g, ' ').trim();
+    return cleaned;
+}
+
+function loadGame() {
+    const pgn = document.getElementById('pgnInput').value.trim();
+    
+    if (!pgn) {
+        alert('Please paste a PGN notation or select a game first.');
+        return;
+    }
+    
+    try {
+        gameInfo = parsePGNHeaders(pgn);
+        gameTree = parsePGNMoves(pgn);
+        currentNode = gameTree;
+        
+        const cleanedPGN = stripCommentsFromPGN(pgn);
+        document.getElementById('pgnInput').value = cleanedPGN;
+        
+        displayGameInfo(gameInfo);
+        displayMoves();
+        goToStart();
+        
+        // Reset Stockfish for new game
+        if (analysisEnabled && engineReady) {
+            analyzePosition();
+        }
+        
+    } catch (error) {
+        const movesDiv = document.getElementById('movesDisplay');
+        movesDiv.innerHTML = `<div class="error-message">Error loading PGN: ${error.message}</div>`;
+        console.error('PGN Error:', error);
+    }
+}
+
+function clearPGN() {
+    document.getElementById('pgnInput').value = '';
+    document.getElementById('gameSelect').selectedIndex = 0;
+    document.getElementById('gameInfo').style.display = 'none';
+    document.getElementById('movesDisplay').innerHTML = '';
+    gameTree = null;
+    currentNode = null;
+    gameInfo = {};
+    
+    initBoard(); // Will show starting position since currentNode is null
+    updateButtons();
+    
+    // Reset analysis display and re-analyze starting position
+    document.getElementById('analysisEval').textContent = 'Evaluation: --';
+    document.getElementById('analysisBestMove').textContent = 'Best move: --';
+    document.getElementById('analysisDepth').textContent = 'Depth: 0';
+    
+    if (analysisEnabled && engineReady) {
+        analyzePosition();
     }
 }
 
@@ -684,269 +1171,11 @@ function loadSelectedGame() {
 }
 
 // ============================================================
-// Board Functions
-// ============================================================
-function initBoard() {
-    const board = document.getElementById('chessboard');
-    board.innerHTML = '';
-    
-    for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-            const square = document.createElement('div');
-            const actualRow = isFlipped ? row : 7 - row;
-            const actualCol = isFlipped ? 7 - col : col;
-            
-            square.className = 'square ' + ((actualRow + actualCol) % 2 === 0 ? 'light' : 'dark');
-            square.dataset.row = actualRow;
-            square.dataset.col = actualCol;
-            board.appendChild(square);
-        }
-    }
-    
-    updateBoard();
-}
-
-function updateBoard() {
-    const squares = document.querySelectorAll('.square');
-    const position = chess.board();
-    
-    squares.forEach(square => {
-        square.innerHTML = '';
-    });
-    
-    for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-            const piece = position[row][col];
-            if (piece) {
-                const actualRow = isFlipped ? 7 - row : row;
-                const actualCol = isFlipped ? 7 - col : col;
-                const index = actualRow * 8 + actualCol;
-                
-                const pieceChar = piece.color === 'w' ? piece.type.toUpperCase() : piece.type;
-                const pieceData = pieces[pieceChar];
-                
-                if (pieceData) {
-                    const pieceSpan = document.createElement('span');
-                    pieceSpan.textContent = pieceData.symbol;
-                    pieceSpan.className = 'piece-' + pieceData.type;
-                    squares[index].appendChild(pieceSpan);
-                }
-            }
-        }
-    }
-}
-
-// ============================================================
-// PGN Parser with Comment Extraction
-// ============================================================
-function parsePGN(pgn) {
-    const headerRegex = /\[(\w+)\s+"([^"]+)"\]/g;
-    const info = {};
-    let match;
-    
-    while ((match = headerRegex.exec(pgn)) !== null) {
-        info[match[1]] = match[2];
-    }
-    
-    return info;
-}
-
-function extractComments(pgn) {
-    // Extract comments and associate them with moves
-    moveComments = {};
-    
-    // Remove headers to get just the moves
-    const movesSection = pgn.replace(/\[.*?\]\s*/g, '');
-    
-    // Parse through the PGN and extract comments
-    let moveIndex = -1;
-    let cleanedPgn = movesSection;
-    
-    // Match comments in braces {...}
-    const commentRegex = /\{([^}]+)\}/g;
-    let commentMatch;
-    let position = 0;
-    
-    while ((commentMatch = commentRegex.exec(movesSection)) !== null) {
-        const comment = commentMatch[1].trim();
-        const commentPosition = commentMatch.index;
-        
-        // Count how many moves come before this comment
-        const textBeforeComment = movesSection.substring(0, commentPosition);
-        const movesBeforeComment = textBeforeComment.match(/\d+\.\s*[a-zA-Z0-9+#=\-]+/g);
-        
-        if (movesBeforeComment) {
-            moveIndex = movesBeforeComment.length - 1;
-            moveComments[moveIndex] = comment;
-        }
-    }
-    
-    return cleanedPgn;
-}
-
-// ============================================================
-// Display Functions
-// ============================================================
-function displayGameInfo(info) {
-    const gameInfoDiv = document.getElementById('gameInfo');
-    if (Object.keys(info).length > 0) {
-        gameInfoDiv.style.display = 'block';
-        gameInfoDiv.innerHTML = `
-            ${info.Event ? `<p><strong>Event:</strong> ${info.Event}</p>` : ''}
-            ${info.White ? `<p><strong>White:</strong> ${info.White}</p>` : ''}
-            ${info.Black ? `<p><strong>Black:</strong> ${info.Black}</p>` : ''}
-            ${info.Result ? `<p><strong>Result:</strong> ${info.Result}</p>` : ''}
-            ${info.Date ? `<p><strong>Date:</strong> ${info.Date}</p>` : ''}
-            ${info.Site ? `<p><strong>Site:</strong> ${info.Site}</p>` : ''}
-        `;
-    } else {
-        gameInfoDiv.style.display = 'none';
-    }
-}
-
-function displayMoves() {
-    const movesDiv = document.getElementById('movesDisplay');
-    movesDiv.innerHTML = '';
-    
-    for (let i = 0; i < moves.length; i += 2) {
-        const moveNumber = Math.floor(i / 2) + 1;
-        const span = document.createElement('span');
-        span.className = 'move-number';
-        span.textContent = `${moveNumber}.`;
-        movesDiv.appendChild(span);
-        
-        const whiteMove = document.createElement('span');
-        whiteMove.className = 'move' + (i === currentMoveIndex ? ' current' : '');
-        whiteMove.textContent = moves[i].san;
-        whiteMove.onclick = () => goToMove(i);
-        movesDiv.appendChild(whiteMove);
-        
-        if (i + 1 < moves.length) {
-            const blackMove = document.createElement('span');
-            blackMove.className = 'move' + (i + 1 === currentMoveIndex ? ' current' : '');
-            blackMove.textContent = moves[i + 1].san;
-            blackMove.onclick = () => goToMove(i + 1);
-            movesDiv.appendChild(blackMove);
-        }
-        
-        movesDiv.appendChild(document.createElement('br'));
-    }
-}
-
-// ============================================================
-// Navigation Functions
-// ============================================================
-function goToMove(index) {
-    chess.reset();
-    currentMoveIndex = -1;
-    
-    for (let i = 0; i <= index; i++) {
-        chess.move(moves[i]);
-        currentMoveIndex = i;
-    }
-    
-    updateBoard();
-    displayMoves();
-    updateButtons();
-    updateCommentDisplay();
-    
-    if (analysisEnabled && engineReady) {
-        analyzePosition();
-    }
-}
-
-function goToStart() {
-    chess.reset();
-    currentMoveIndex = -1;
-    updateBoard();
-    displayMoves();
-    updateButtons();
-    updateCommentDisplay();
-    
-    if (analysisEnabled && engineReady) {
-        analyzePosition();
-    }
-}
-
-function goToPrevious() {
-    if (currentMoveIndex >= 0) {
-        goToMove(currentMoveIndex - 1);
-    }
-}
-
-function goToNext() {
-    if (currentMoveIndex < moves.length - 1) {
-        goToMove(currentMoveIndex + 1);
-    }
-}
-
-function goToEnd() {
-    if (moves.length > 0) {
-        goToMove(moves.length - 1);
-    }
-}
-
-function flipBoard() {
-    isFlipped = !isFlipped;
-    initBoard();
-}
-
-// ============================================================
-// Button Updates
-// ============================================================
-function updateButtons() {
-    document.getElementById('startBtn').disabled = currentMoveIndex < 0;
-    document.getElementById('prevBtn').disabled = currentMoveIndex < 0;
-    document.getElementById('nextBtn').disabled = currentMoveIndex >= moves.length - 1;
-    document.getElementById('endBtn').disabled = currentMoveIndex >= moves.length - 1;
-}
-
-// ============================================================
-// Load Game
-// ============================================================
-function loadGame() {
-    const pgn = document.getElementById('pgnInput').value.trim();
-    
-    if (!pgn) {
-        alert('Please paste a PGN notation or select a game first.');
-        return;
-    }
-    
-    try {
-        chess.reset();
-        gameInfo = parsePGN(pgn);
-        
-        // Extract comments before loading
-        extractComments(pgn);
-        
-        const loaded = chess.load_pgn(pgn);
-        
-        if (!loaded) {
-            throw new Error('Invalid PGN format');
-        }
-        
-        moves = chess.history({ verbose: true });
-        chess.reset();
-        
-        displayGameInfo(gameInfo);
-        displayMoves();
-        goToStart();
-        
-        if (moves.length === 0) {
-            throw new Error('No valid moves found in PGN');
-        }
-    } catch (error) {
-        const movesDiv = document.getElementById('movesDisplay');
-        movesDiv.innerHTML = `<div class="error-message">Error loading PGN: ${error.message}</div>`;
-        console.error('PGN Error:', error);
-    }
-}
-
-// ============================================================
 // Event Listeners
 // ============================================================
 document.getElementById('gameSelect').addEventListener('change', loadSelectedGame);
 document.getElementById('loadBtn').addEventListener('click', loadGame);
+document.getElementById('clearBtn').addEventListener('click', clearPGN);
 document.getElementById('startBtn').addEventListener('click', goToStart);
 document.getElementById('prevBtn').addEventListener('click', goToPrevious);
 document.getElementById('nextBtn').addEventListener('click', goToNext);
