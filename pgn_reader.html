@@ -393,7 +393,7 @@
 </header>
 
 <div class="pgn-container">
-    <h2 class="pgn-header">PGN Game Viewer</h2>
+    <h2 class="pgn-header">Game Viewer</h2>
     
     <div class="pgn-layout">
         <!-- Board Section -->
@@ -820,7 +820,7 @@ function toggleAnalysis() {
         }
     } else {
         btn.classList.remove('active');
-        btn.textContent = '✓ Analysis';
+        btn.textContent = '🔍 Analysis';
         panel.classList.remove('active');
         
         if (engineWorker) {
@@ -889,17 +889,26 @@ function displayMovesRecursive(node, container, moveNumber, isVariation) {
             container.appendChild(preCommentSpan);
         }
         
-        // Display move number for white moves
+        // Display move number
         if (child.move.color === 'w') {
             const numSpan = document.createElement('span');
             numSpan.className = 'move-number';
             numSpan.textContent = `${moveNumber}.`;
             container.appendChild(numSpan);
-        } else if (index === 0 && isVariation) {
-            const numSpan = document.createElement('span');
-            numSpan.className = 'move-number';
-            numSpan.textContent = `${moveNumber}...`;
-            container.appendChild(numSpan);
+        } else {
+            // Black move: show N... only when flow was interrupted
+            const needsNumber =
+                node.move === null ||           // start of game or variation
+                child.preComment !== null ||    // this Black move has a pre-comment
+                node.postComment !== null ||    // preceding White move had a post-comment
+                node.variations.length > 0;    // preceding White move had variations after it
+
+            if (needsNumber) {
+                const numSpan = document.createElement('span');
+                numSpan.className = 'move-number';
+                numSpan.textContent = `${moveNumber}...`;
+                container.appendChild(numSpan);
+            }
         }
         
         // Display the move
@@ -1089,6 +1098,24 @@ function stripCommentsFromPGN(pgn) {
     return cleaned;
 }
 
+function isValidPGN(pgn) {
+    // Use chess.js to validate before we try to parse it ourselves
+    try {
+        const testChess = new Chess();
+        // Strip comments and variations for validation purposes only
+        let stripped = pgn.replace(/\{[^}]*\}/g, '');
+        stripped = stripped.replace(/\([^)]*\)/g, '');
+        stripped = stripped.replace(/$\d+/g, '');
+        // Must have at least one move-like token (letter followed by chess chars)
+        if (!/[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8]|O-O/.test(stripped)) {
+            return false;
+        }
+        return testChess.load_pgn(stripped);
+    } catch (e) {
+        return false;
+    }
+}
+
 function loadGame() {
     const pgn = document.getElementById('pgnInput').value.trim();
     
@@ -1097,13 +1124,15 @@ function loadGame() {
         return;
     }
     
+    if (!isValidPGN(pgn)) {
+        clearPGN();
+        return;
+    }
+    
     try {
         gameInfo = parsePGNHeaders(pgn);
         gameTree = parsePGNMoves(pgn);
         currentNode = gameTree;
-        
-        const cleanedPGN = stripCommentsFromPGN(pgn);
-        document.getElementById('pgnInput').value = cleanedPGN;
         
         displayGameInfo(gameInfo);
         displayMoves();
@@ -1115,9 +1144,8 @@ function loadGame() {
         }
         
     } catch (error) {
-        const movesDiv = document.getElementById('movesDisplay');
-        movesDiv.innerHTML = `<div class="error-message">Error loading PGN: ${error.message}</div>`;
         console.error('PGN Error:', error);
+        clearPGN();
     }
 }
 
