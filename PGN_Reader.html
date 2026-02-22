@@ -79,9 +79,7 @@
       background-color: #9a7454;
     }
 
-    .square.highlight {
-      background-color: rgba(255, 255, 0, 0);
-    }
+
 
     /* Make non-pawn pieces 15% larger */
     .square .piece-king,
@@ -985,27 +983,7 @@ function updateBoard() {
     
     squares.forEach(square => {
         square.innerHTML = '';
-        square.classList.remove('highlight');
     });
-    
-    // Highlight the last move if one exists
-    if (currentNode && currentNode.move) {
-        const fromSquare = currentNode.move.from;
-        const toSquare = currentNode.move.to;
-        
-        const fromFile = fromSquare.charCodeAt(0) - 97;
-        const fromRank = parseInt(fromSquare[1]) - 1;
-        const toFile = toSquare.charCodeAt(0) - 97;
-        const toRank = parseInt(toSquare[1]) - 1;
-        
-        const fromRow = isFlipped ? fromRank : 7 - fromRank;
-        const fromCol = isFlipped ? 7 - fromFile : fromFile;
-        const toRow = isFlipped ? toRank : 7 - toRank;
-        const toCol = isFlipped ? 7 - toFile : toFile;
-        
-        squares[fromRow * 8 + fromCol].classList.add('highlight');
-        squares[toRow * 8 + toCol].classList.add('highlight');
-    }
     for (let row = 0; row < 8; row++) {
         for (let col = 0; col < 8; col++) {
             const piece = position[row][col];
