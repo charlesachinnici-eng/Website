@@ -96,10 +96,11 @@ h2 {
     justify-items: center;
     text-align: center;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr;
     grid-template-areas: "button1 button2"
                         "button3 button4"
-                        "button5 button6";
+                        "button5 button6"
+                        "button7 button8";
     gap: 1vh 2vw;
     flex: 1;
     padding: 1vh 0;
@@ -108,7 +109,7 @@ h2 {
     max-height: 100%;
 }
 
-.button1, .button2, .button3, .button4, .button5, .button6 {
+.button1, .button2, .button3, .button4, .button5, .button6, .button7, .button8 {
     padding: clamp(0.5rem, 2vh, 1rem) clamp(0.3rem, 2vw, 1rem);
     font-size: clamp(1.33rem, 4.75vw, 2.375rem); /* 90% larger */
     color: var(--primary-color);
@@ -125,7 +126,7 @@ h2 {
     justify-content: center;
 }
 
-.button1:hover, .button2:hover, .button3:hover, .button4:hover, .button5:hover, .button6:hover {
+.button1:hover, .button2:hover, .button3:hover, .button4:hover, .button5:hover, .button6:hover, .button7:hover, .button8:hover {
     background-color: var(--secondary-color);
     border: white solid 2px;
     opacity: 1.0;
