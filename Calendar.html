@@ -4,21 +4,95 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
-  <title>Reno Chess Club</title>
+  <title>Reno Chess Club - Calendar</title>
+  <style>
+    /* Allow scrolling on this page */
+    html, body {
+      height: auto !important;
+      min-height: 100vh;
+      overflow-y: auto !important;
+      overflow-x: hidden;
+    }
+
+    .calendar-container {
+      max-width: 1200px;
+      margin: 1.5rem auto;
+      padding: 1.5rem;
+      background-color: rgba(242, 242, 242, 0.95);
+      border-radius: 1rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .calendar-header {
+      color: var(--primary-dark-color);
+      margin-bottom: 1.25rem;
+      font-size: 2rem;
+      text-align: center;
+    }
+
+    .calendar-wrapper {
+      position: relative;
+      width: 100%;
+      /* Maintain 800:600 aspect ratio */
+      padding-bottom: 75%;
+      height: 0;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      border: 3px solid var(--accent-color);
+    }
+
+    .calendar-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .footer-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      max-width: 600px;
+      margin: 1.5rem auto 1rem;
+    }
+
+    .footer-buttons .button1,
+    .footer-buttons .button2 {
+      flex: 1;
+    }
+  </style>
 </head>
 <body>
 <header>
-    <h1><a class = "return-home" href="index.html">Reno Chess Club</a></h1>
-    <h2><a class = "address" target="_blank" rel="noopener noreferrer" href="https://www.google.com/search?q=125+west+plumb+lane+reno+nv&oq=125+west+plumb+lane+reno+nv&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIKCAEQABiABBiiBDIKCAIQABiABBiiBDIHCAMQABjvBTIKCAQQABiABBiiBDIHCAUQABjvBdIBCDQ3NTlqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8&sei=ZRZjaYDNCYKtw8cPnNOJ8A0">125 West Plumb Lane</a></h2>
-    <h2><a class = "address" target="_blank" rel="noopener noreferrer" href="https://www.google.com/search?q=125+west+plumb+lane+reno+nv&oq=125+west+plumb+lane+reno+nv&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIKCAEQABiABBiiBDIKCAIQABiABBiiBDIHCAMQABjvBTIKCAQQABiABBiiBDIHCAUQABjvBdIBCDQ3NTlqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8&sei=ZRZjaYDNCYKtw8cPnNOJ8A0">Reno, Nevada 89502</a></h2>
-    <h2 class = "phone-number">775-355-1802</h2>
+    <h1><a class="return-home" href="index.html">Reno Chess Club</a></h1>
+    <h2><a class="address" target="_blank" rel="noopener noreferrer" href="https://www.google.com/search?q=125+west+plumb+lane+reno+nv&oq=125+west+plumb+lane+reno+nv&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIKCAEQABiABBiiBDIKCAIQABiABBiiBDIHCAMQABjvBTIKCAQQABiABBiiBDIHCAUQABjvBdIBCDQ3NTlqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8&sei=ZRZjaYDNCYKtw8cPnNOJ8A0">125 West Plumb Lane</a></h2>
+    <h2><a class="address" target="_blank" rel="noopener noreferrer" href="https://www.google.com/search?q=125+west+plumb+lane+reno+nv&oq=125+west+plumb+lane+reno+nv&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIKCAEQABiABBiiBDIKCAIQABiABBiiBDIHCAMQABjvBTIKCAQQABiABBiiBDIHCAUQABjvBdIBCDQ3NTlqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8&sei=ZRZjaYDNCYKtw8cPnNOJ8A0">Reno, Nevada 89502</a></h2>
+    <h2 class="phone-number">775-355-1802</h2>
     <h2>Thursdays 5:30pm-Midnight</h2>
 </header>
-    <div class = "grid-container">
-    <a >Let's put a window to our calendar here?  Or something like that.</a>
+
+<div class="calendar-container">
+    <h2 class="calendar-header">Club Calendar</h2>
+    <div class="calendar-wrapper">
+        <iframe
+            src="https://calendar.google.com/calendar/embed?src=cd27ad33b083404ec8735fa857bbdef8cfee673fa8bdce75ee93d3417a708f7b%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=AGENDA"
+            style="border: 0"
+            frameborder="0"
+            scrolling="no"
+            title="Reno Chess Club Calendar">
+        </iframe>
     </div>
-</body>               
+</div>
+
+<div class="footer-buttons">
+    <a class="button1" href="index.html">Home</a>
+    <a class="button2" href="Contact.html">Contact</a>
+</div>
+
 <footer>
     <h4>Copyright © 2026 Reno Chess Club. All rights reserved.</h4>
 </footer>
+</body>
 </html>
