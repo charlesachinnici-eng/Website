@@ -22,7 +22,7 @@ Everything on the Reno Chess Club website can be changed in the **editor**. It w
 
 ## What you can change
 
-**Club info:** the club name, address, phone number, meeting times, footer text, and the Google Calendar shown on the Calendar page.
+**Club info:** the club name, address, phone number, meeting times, footer text, and the Google Calendar. You can see these in the editor, but only the Super Admin can change them. Ask the Super Admin if something there needs updating.
 
 **Colors & look:** pick one of the approved color schemes, a font, and the background picture. Text colors are chosen automatically, so the site always stays readable.
 
@@ -33,11 +33,16 @@ Everything on the Reno Chess Club website can be changed in the **editor**. It w
 
 To make a new page, click **Add** under Pages, then add a button somewhere else (for example on the Home page) that goes to it. Otherwise nobody can find it.
 
-**News:** add a post with a headline, date, optional picture and story. The newest posts show on **Current News**. Older ones move to **Old News** on their own. (How many count as "current" is set in Club info.)
+**News:** add a post with a headline, date, optional picture and story. The newest posts show on **Current News**. Older ones move to **Old News** on their own. (How many count as "current" is set in Club info by the Super Admin.)
 
 **Events:** add the event name, date (and last day, for events longer than one day), and optionally the time, place, a link (such as the US Chess event page), a picture and a description. Events appear on **Current Club Events** and disappear by themselves after they're over.
 
 **Games (Game Viewer):** add a game by pasting it in PGN notation and giving it a name. "Position in the list" controls the order (1 = top).
+
+## Who can do what
+
+- **Admins** (everyone invited by email) can change everything in the editor except Club info.
+- **The Super Admin** can also change Club info, the editor's setup, and who is invited.
 
 ## Pictures
 

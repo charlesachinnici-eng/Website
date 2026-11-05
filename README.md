@@ -18,7 +18,7 @@ Editor (app.pagescms.org)  --saves files-->  this GitHub repo  --GitHub Actions 
 
 | Path | What it is | Edited in the editor as |
 |---|---|---|
-| `site/_data/club.json` | Club name, address, phone, hours, footer, calendar address | Club info |
+| `site/_data/club.json` | Club name, address, phone, hours, footer, calendar address | Club info (read-only for Admins) |
 | `site/_data/theme.json` | Chosen colour scheme, font, background picture | Colors & look |
 | `site/_data/schemes.js` | The approved colour schemes and fonts (developer-only) | - |
 | `site/pages/*.md` | One file per page: title, optional text, buttons. `News.md` becomes `News.html`. | Pages |
@@ -62,7 +62,18 @@ Most pages are **menu** pages: a full-screen grid of buttons, or, if the page ha
 3. **Invite editors.** In Pages CMS, add each editor's email address as a **collaborator** on this repository. They get an email invitation and sign in with that email; no GitHub account is needed.
 4. Send editors the link to **`editor-help.html`** on the live site.
 
-Only you (a GitHub user with access to the repo) can change `.pages.yml` or manage collaborators. Editors can change content and pictures only. Each editor's name is recorded on their changes in the repo history.
+### Access levels
+
+| Level | Who | Can change |
+|---|---|---|
+| **Super Admin** | A GitHub user with access to this repo (you) | Everything: all content, the editor configuration (`.pages.yml`), the collaborator list, and Club info |
+| **Admin** | An email collaborator invited in Pages CMS (no GitHub account) | All content and pictures. **Not** the configuration, collaborators, or Club info |
+
+Pages CMS itself provides the first two restrictions: collaborators can never edit `.pages.yml` or manage collaborators. Club info is locked by marking its fields `readonly` in `.pages.yml`. Admins see it but can't change it, and they can't unlock it because they can't edit the configuration.
+
+To change Club info, the Super Admin edits `site/_data/club.json` on GitHub (open the file, then the pencil icon), or in VS Code. To make another person a Super Admin, add their GitHub account as a collaborator on the repo in GitHub (**Settings > Collaborators**).
+
+Each editor's name is recorded on their changes in the repo history.
 
 ## Working on the code
 

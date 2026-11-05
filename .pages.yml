@@ -1,7 +1,12 @@
 # Pages CMS configuration: defines what editors see in the editor at https://app.pagescms.org
 # Docs: https://pagescms.org/docs/
 #
-# Editors sign in with their email (invited as "collaborators"), so they never need GitHub.
+# Access levels:
+#   Super Admin = a GitHub user with access to this repo. Everything, including this
+#                 configuration, the collaborator list, and Club info (edited on GitHub).
+#   Admin       = an email "collaborator" (no GitHub account). All content and pictures,
+#                 but cannot change this configuration, collaborators, or Club info
+#                 (Club info is shown read-only below).
 # Every save is published to the website automatically within a minute or two.
 
 media:
@@ -59,31 +64,26 @@ components:
 content:
   # ----------------------------------------------------------------
   - name: club
-    label: Club info
+    label: Club info (Super Admin only)
     type: file
     path: site/_data/club.json
     format: json
     operations: { create: false, delete: false }
     fields:
-      - { name: name, label: Club name, type: string, required: true }
-      - { name: address_line1, label: Street address, type: string }
-      - { name: address_line2, label: "City, state, ZIP", type: string }
-      - name: map_link
-        label: Map link
-        description: Where the address goes when clicked (e.g. a Google Maps link).
+      - name: name
+        label: Club name
+        description: "Read-only here. Only the Super Admin can change Club info, on GitHub: https://github.com/charlesachinnici-eng/Website/edit/main/site/_data/club.json"
         type: string
-      - { name: phone, label: Phone, type: string }
-      - { name: hours, label: Meeting times, description: "Shown in the header, e.g. Thursdays 5:30pm-Midnight", type: string }
-      - { name: footer_text, label: Footer text, type: string }
-      - name: current_news_count
-        label: News posts on the Current News page
-        description: The newest posts appear on Current News; older ones move to Old News automatically.
-        type: number
-        options: { min: 1, max: 30 }
-      - name: calendar_embed
-        label: Google Calendar embed address
-        description: From Google Calendar > Settings > your calendar > "Integrate calendar" > Embed code (the address inside src="...").
-        type: string
+        required: true
+        readonly: true
+      - { name: address_line1, label: Street address, type: string, readonly: true }
+      - { name: address_line2, label: "City, state, ZIP", type: string, readonly: true }
+      - { name: map_link, label: Map link, type: string, readonly: true }
+      - { name: phone, label: Phone, type: string, readonly: true }
+      - { name: hours, label: Meeting times, type: string, readonly: true }
+      - { name: footer_text, label: Footer text, type: string, readonly: true }
+      - { name: current_news_count, label: News posts on the Current News page, type: number, readonly: true }
+      - { name: calendar_embed, label: Google Calendar embed address, type: string, readonly: true }
 
   # ----------------------------------------------------------------
   - name: theme
