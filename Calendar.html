@@ -6,18 +6,17 @@
   <link rel="stylesheet" href="style.css" />
   <title>Reno Chess Club - Calendar</title>
   <style>
-    /* Allow scrolling on this page */
-    html, body {
-      height: auto !important;
-      min-height: 100vh;
-      overflow-y: auto !important;
-      overflow-x: hidden;
-    }
-
+    /* One-screen layout: the calendar fills the space between header and buttons.
+       The embedded Google Calendar scrolls inside its own frame; the page does not. */
     .calendar-container {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      width: var(--width-boxes);
       max-width: 1200px;
-      margin: 1.5rem auto;
-      padding: 1.5rem;
+      margin: 0.5vh auto;
+      padding: clamp(0.4rem, 1.5vh, 1.25rem);
       background-color: rgba(242, 242, 242, 0.95);
       border-radius: 1rem;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -25,17 +24,17 @@
 
     .calendar-header {
       color: var(--primary-dark-color);
-      margin-bottom: 1.25rem;
-      font-size: 2rem;
+      margin-bottom: clamp(0.25rem, 1vh, 1rem);
+      font-size: clamp(1.1rem, 3.5vh, 2rem);
       text-align: center;
+      padding: 0;
     }
 
     .calendar-wrapper {
+      flex: 1;
+      min-height: 0;
       position: relative;
       width: 100%;
-      /* Maintain 800:600 aspect ratio */
-      padding-bottom: 75%;
-      height: 0;
       border-radius: 0.5rem;
       overflow: hidden;
       border: 3px solid var(--accent-color);
@@ -52,15 +51,23 @@
 
     .footer-buttons {
       display: flex;
+      flex-shrink: 0;
       gap: 1rem;
       justify-content: center;
+      width: var(--width-boxes);
       max-width: 600px;
-      margin: 1.5rem auto 1rem;
+      height: clamp(2.5rem, 6.5vh, 3.75rem);
+      margin: 0.5vh auto;
     }
 
     .footer-buttons .button1,
     .footer-buttons .button2 {
       flex: 1;
+    }
+    .footer-buttons a {
+      font-size: clamp(0.95rem, 2.4vh, 1.6rem);
+      padding-top: 0;
+      padding-bottom: 0;
     }
   </style>
 </head>
@@ -80,7 +87,6 @@
             src="https://calendar.google.com/calendar/embed?src=cd27ad33b083404ec8735fa857bbdef8cfee673fa8bdce75ee93d3417a708f7b%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=AGENDA"
             style="border: 0"
             frameborder="0"
-            scrolling="no"
             title="Reno Chess Club Calendar">
         </iframe>
     </div>
