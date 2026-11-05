@@ -95,6 +95,33 @@ export default function (eleventyConfig) {
   eleventyConfig.addFilter("readableOn", readableOn);
   eleventyConfig.addFilter("contrast", contrast);
 
+  // Every scheme's full set of CSS variables (text colours included), for theme-preview.html
+  eleventyConfig.addFilter("previewSchemes", (schemes) =>
+    Object.fromEntries(
+      Object.entries(schemes || {}).map(([key, s]) => [
+        key,
+        {
+          label: s.label,
+          vars: {
+            "--header-bg": s.header,
+            "--header-text": readableOn(s.header),
+            "--button-bg": s.button,
+            "--button-text": readableOn(s.button),
+            "--button-hover-bg": s.buttonHover,
+            "--button-hover-text": readableOn(s.buttonHover),
+            "--panel-bg": s.panel,
+            "--panel-text": readableOn(s.panel),
+            "--accent": s.accent,
+            "--strong": s.strong,
+            "--strong-text": readableOn(s.strong),
+            "--board-light": s.boardLight,
+            "--board-dark": s.boardDark,
+          },
+        },
+      ])
+    )
+  );
+
   const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   eleventyConfig.addFilter("ymd", ymd);
   eleventyConfig.addFilter("niceDate", (d) => {

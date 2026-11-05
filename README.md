@@ -29,6 +29,7 @@ Editor (app.pagescms.org)  --saves files-->  this GitHub repo  --GitHub Actions 
 | `site/_includes/` | Page templates: `base.njk` (header, footer, theme), `page.njk` (all page types), `viewer.njk` | - |
 | `site/assets/` | `css/style.css`, `css/viewer.css`, `js/viewer.js`, `js/pgn-parser.js` | - |
 | `site/site-check.njk` | `site-check.html`: report of games held back and broken buttons, for editors | - |
+| `site/theme-preview.njk` | `theme-preview.html`: try every colour scheme and font on real pages before saving one in the editor | - |
 | `site/editor-help.md` | `editor-help.html`: the editors' guide | - |
 | `.pages.yml` | What the editor shows: sections, fields, labels, help text | - |
 | `eleventy.config.js` | Build settings, filters, and the build-time game check | - |
@@ -88,7 +89,7 @@ npm run build    # one-off build into _site/
 ### Adding a colour scheme
 
 1. Add an entry in `site/_data/schemes.js`.
-2. Add its key to the `scheme` list under "Colors & look" in `.pages.yml`.
+2. Add its key to the `scheme` list under "Colors & look" in `.pages.yml`. It appears in `theme-preview.html` automatically.
 3. Check readability: the build picks text colours, but keep each scheme's `strong` colour dark enough to read on its `panel` colour.
 
 ### Moving to another host or address

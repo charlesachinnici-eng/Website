@@ -1,0 +1,128 @@
+---
+permalink: theme-preview.html
+eleventyExcludeFromCollections: true
+---
+{#- Try every colour scheme and font on the real site before saving a choice in the editor.
+    Shows a real page in a frame and swaps its theme colours in the browser; nothing is saved. -#}
+{%- set pv = schemes.schemes | previewSchemes -%}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>{{ club.name }} - Preview colors &amp; font</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      display: flex; flex-direction: column;
+      font: 15px/1.35 system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: #2b2b2b; color: #f2f2f2;
+    }
+    .bar {
+      flex-shrink: 0;
+      display: flex; flex-wrap: wrap; align-items: end; gap: 0.6rem 1rem;
+      padding: 0.6rem 1rem;
+      background: #1c1c1c; border-bottom: 1px solid #444;
+    }
+    .bar h1 { font-size: 1.05rem; flex-basis: 100%; }
+    label { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.8rem; color: #ccc; }
+    select, button {
+      font: inherit; font-size: 0.95rem; color: #111; background: #fff;
+      border: 1px solid #888; border-radius: 0.4rem; padding: 0.35rem 0.5rem; min-width: 10rem;
+    }
+    button { min-width: 0; cursor: pointer; background: #e6e6e6; }
+    button:hover { background: #fff; }
+    .hint { flex-basis: 100%; font-size: 0.82rem; color: #bbb; }
+    .hint strong { color: #fff; }
+    .swatches { display: flex; gap: 3px; align-self: center; }
+    .swatches span { width: 1.4rem; height: 1.4rem; border-radius: 3px; border: 1px solid #555; }
+    iframe { flex: 1; min-height: 0; width: 100%; border: 0; background: #fff; }
+    @media (max-width: 600px) {
+      .bar { padding: 0.5rem; gap: 0.4rem 0.6rem; }
+      select { min-width: 0; width: 100%; }
+      label { flex: 1 1 45%; }
+      .swatches { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <h1>Preview colors &amp; font</h1>
+    <label>Color scheme
+      <select id="scheme">
+        {%- for key, s in pv %}
+        <option value="{{ key }}"{% if key == theme.scheme %} selected{% endif %}>{{ s.label }}{% if key == theme.scheme %} (current){% endif %}</option>
+        {%- endfor %}
+      </select>
+    </label>
+    <label>Font
+      <select id="font">
+        {%- for key, f in schemes.fonts %}
+        <option value="{{ key }}"{% if key == theme.font %} selected{% endif %}>{{ f.label }}{% if key == theme.font %} (current){% endif %}</option>
+        {%- endfor %}
+      </select>
+    </label>
+    <label>Show page
+      <select id="page">
+        <option value="index.html">Home</option>
+        <option value="About.html">About (text page)</option>
+        <option value="Current_Events.html">Current Club Events</option>
+        <option value="PGN_Reader.html">Game Viewer</option>
+        <option value="Calendar.html">Calendar</option>
+      </select>
+    </label>
+    <div class="swatches" id="swatches" aria-hidden="true"></div>
+    <button type="button" id="reset">Back to current</button>
+    <p class="hint">Nothing here changes the website. When you find one you like, go to the editor's
+      <strong>Colors &amp; look</strong>, choose the same color scheme and font, and click <strong>Save</strong>.
+      You can also click around inside the preview.</p>
+  </div>
+  <iframe id="frame" title="Preview of the website" src="index.html"></iframe>
+
+  <script>
+    const SCHEMES = {{ pv | json | safe }};
+    const FONTS = {{ schemes.fonts | json | safe }};
+    const CURRENT = { scheme: {{ theme.scheme | json | safe }}, font: {{ theme.font | json | safe }} };
+
+    const $ = (id) => document.getElementById(id);
+    const frame = $("frame");
+
+    function css() {
+      const s = SCHEMES[$("scheme").value];
+      const f = FONTS[$("font").value];
+      const vars = Object.entries(s.vars).map(([k, v]) => `${k}: ${v};`).join(" ");
+      return `:root { ${vars} --font-family: ${f.stack}; }`;
+    }
+
+    function apply() {
+      const doc = frame.contentDocument;
+      if (doc && doc.head) {
+        let tag = doc.getElementById("theme-preview");
+        if (!tag) {
+          tag = doc.createElement("style");
+          tag.id = "theme-preview";
+          doc.head.appendChild(tag);
+        }
+        tag.textContent = css();
+      }
+      const v = SCHEMES[$("scheme").value].vars;
+      $("swatches").innerHTML = ["--header-bg", "--button-bg", "--button-hover-bg", "--panel-bg", "--strong", "--board-light", "--board-dark"]
+        .map((k) => `<span style="background:${v[k]}"></span>`).join("");
+    }
+
+    $("scheme").addEventListener("change", apply);
+    $("font").addEventListener("change", apply);
+    $("page").addEventListener("change", () => { frame.src = $("page").value; });
+    $("reset").addEventListener("click", () => {
+      $("scheme").value = CURRENT.scheme;
+      $("font").value = CURRENT.font;
+      apply();
+    });
+    // Re-apply after every page change inside the preview
+    frame.addEventListener("load", apply);
+    apply();
+  </script>
+</body>
+</html>

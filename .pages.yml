@@ -95,7 +95,7 @@ content:
     fields:
       - name: scheme
         label: Color scheme
-        description: Text colors are chosen automatically so everything stays readable.
+        description: "Try them all on the real site first (nothing is saved there): https://charlesachinnici-eng.github.io/Website/theme-preview.html - Text colors are chosen automatically so everything stays readable."
         type: select
         required: true
         options:

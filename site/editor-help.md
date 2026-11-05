@@ -7,6 +7,8 @@ buttons:
   - label: Open the editor
     url: https://app.pagescms.org
     new_tab: true
+  - label: Preview colors
+    page: theme-preview
   - label: Site check
     page: site-check
   - label: Home
@@ -24,7 +26,7 @@ Everything on the Reno Chess Club website can be changed in the **editor**. It w
 
 **Club info:** the club name, address, phone number, meeting times, footer text, and the Google Calendar. You can see these in the editor, but only the Super Admin can change them. Ask the Super Admin if something there needs updating.
 
-**Colors & look:** pick one of the approved color schemes, a font, and the background picture. Text colors are chosen automatically, so the site always stays readable.
+**Colors & look:** pick one of the approved color schemes, a font, and the background picture. Text colors are chosen automatically, so the site always stays readable. To try them before saving, open **[Preview colors](theme-preview.html)**: it shows the real site in any scheme and font, and changes nothing until you save your choice in the editor.
 
 **Pages:** every page of the site. Each page has:
 - a **title**,
