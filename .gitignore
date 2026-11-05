@@ -1,0 +1,7 @@
+# Desktop Stockfish build - not used by the site (PGN_Reader loads Stockfish from cdnjs)
+stockfish-windows-x86-64/
+
+# Editor / OS clutter
+.DS_Store
+Thumbs.db
+desktop.ini
