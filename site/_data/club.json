@@ -1,0 +1,11 @@
+{
+  "name": "Reno Chess Club",
+  "address_line1": "125 West Plumb Lane",
+  "address_line2": "Reno, Nevada 89502",
+  "map_link": "https://www.google.com/maps/search/?api=1&query=125+West+Plumb+Lane+Reno+NV+89502",
+  "phone": "775-355-1802",
+  "hours": "Thursdays 5:30pm-Midnight",
+  "footer_text": "Copyright © 2026 Reno Chess Club. All rights reserved.",
+  "calendar_embed": "https://calendar.google.com/calendar/embed?src=cd27ad33b083404ec8735fa857bbdef8cfee673fa8bdce75ee93d3417a708f7b%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=AGENDA",
+  "current_news_count": 5
+}

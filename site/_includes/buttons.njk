@@ -1,0 +1,8 @@
+{#- A set of page buttons. "barMode" = a compact row under other content; otherwise a full-screen grid. -#}
+{%- if buttons and buttons.length %}
+<nav class="{{ 'button-bar' if barMode else 'grid-container' }}">
+  {%- for b in buttons %}
+    <a class="btn" href="{{ b | buttonHref }}"{% if b.new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ b.label }}</a>
+  {%- endfor %}
+</nav>
+{%- endif %}

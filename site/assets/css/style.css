@@ -1,0 +1,328 @@
+/* Reno Chess Club - shared styles for every page.
+   Colours and font come from the theme chosen in the editor (Site settings -> Theme);
+   they arrive as the CSS variables set in site/_includes/base.njk. */
+
+:root {
+    --font-size: 1.75vh;
+    --width-boxes: 95%;
+    --opacity-level: 0.80;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ---- One-screen layout ----
+   The page is exactly one screen tall and never scrolls.
+   100dvh = the *visible* height on phones (excludes the browser's URL bar);
+   100vh is the fallback for older browsers. */
+html {
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    font-size: var(--font-size);
+    text-align: center;
+    font-family: var(--font-family);
+    background-color: var(--panel-bg);
+    color: var(--panel-text);
+    opacity: var(--opacity-level);
+    -webkit-backdrop-filter: blur(10px);   /* softens the background photo */
+    backdrop-filter: blur(10px);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    overflow: hidden;
+    overscroll-behavior: none;   /* no rubber-band bounce on phones */
+}
+
+/* ---- Header ----
+   Sizes scale with the screen HEIGHT (vh), so the full 5-line header takes roughly
+   the same share of the screen (~20%) on any laptop or monitor.
+   min(...vw) keeps it from getting too wide on narrow windows. */
+header {
+    font-family: var(--font-family);
+    background-color: var(--header-bg);
+    color: var(--header-text);
+    padding: clamp(0.25rem, 1vh, 0.625rem);
+    margin: 0.5vh auto;
+    width: var(--width-boxes);
+    border-radius: 1rem;
+    flex-shrink: 0;
+}
+
+h1 {
+    font-size: clamp(1.4rem, min(6vw, 4.6vh), 3rem);
+    line-height: 1.15;
+    margin-bottom: 0.3vh;
+}
+
+header h2 {
+    padding: clamp(0.1rem, 0.4vh, 0.5rem);
+    font-size: clamp(0.8rem, min(3.75vw, 2.4vh), 3rem);
+    line-height: 1.15;
+}
+
+.return-home {
+    font-size: clamp(1.4rem, min(6vw, 4.6vh), 3.75rem);
+    color: var(--header-text);
+    text-decoration: none;
+}
+
+.address {
+    color: var(--header-text);
+    text-decoration: none;
+}
+
+/* ---- Buttons ---- */
+.btn {
+    padding: clamp(0.25rem, 1.5vh, 1rem) clamp(0.3rem, 2vw, 1rem);
+    font-size: clamp(0.95rem, min(4.75vw, 3.6vh), 2.375rem);
+    line-height: 1.15;
+    color: var(--button-text);
+    border: var(--button-bg) solid 2px;
+    background-color: var(--button-bg);
+    border-radius: 1rem;
+    text-align: center;
+    text-decoration: none;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn:hover,
+.btn:focus-visible {
+    background-color: var(--button-hover-bg);
+    color: var(--button-hover-text);
+    border: white solid 2px;
+    cursor: pointer;
+}
+
+/* Full-screen button grid: takes whatever height is left between header and footer.
+   Rows are created as needed, so 4-, 6- and 8-button pages all fill the space. */
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: minmax(0, 1fr);
+    gap: 1vh 2vw;
+    flex: 1;
+    min-height: 0;
+    padding: 1vh 0;
+    margin: 0 auto;
+    width: var(--width-boxes);
+}
+
+/* Compact row(s) of buttons under a text box, calendar or game viewer */
+.button-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(9rem, 30%), 1fr));
+    grid-auto-rows: clamp(2.3rem, 6.5vh, 3.75rem);
+    gap: 0.5vh 1vw;
+    flex-shrink: 0;
+    width: var(--width-boxes);
+    max-width: 1000px;
+    margin: 0.5vh auto;
+}
+
+.button-bar .btn {
+    font-size: clamp(0.85rem, 2.4vh, 1.6rem);
+    padding-top: 0;
+    padding-bottom: 0;
+    border-radius: 0.75rem;
+}
+
+/* ---- Boxes holding text, news, events, the calendar ---- */
+.panel {
+    flex: 1;
+    min-height: 0;
+    width: var(--width-boxes);
+    max-width: 1200px;
+    margin: 0.5vh auto;
+    padding: clamp(0.5rem, 2vh, 1.5rem) clamp(0.75rem, 3vw, 2rem);
+    background-color: var(--panel-bg);
+    color: var(--panel-text);
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.panel-title {
+    color: var(--panel-text);
+    font-size: clamp(1.1rem, 3.5vh, 2rem);
+    margin-bottom: clamp(0.25rem, 1vh, 1rem);
+}
+
+/* Text pages, news and events: only this box scrolls, never the page */
+.content-panel {
+    overflow-y: auto;
+    text-align: left;
+    max-width: 1000px;
+    font-size: clamp(0.95rem, 2.1vh, 1.15rem);
+    line-height: 1.55;
+}
+
+.content-panel .panel-title { text-align: center; }
+
+.content-panel p,
+.content-panel ul,
+.content-panel ol,
+.content-panel blockquote,
+.content-panel table { margin-bottom: 0.8em; }
+
+.content-panel ul,
+.content-panel ol { padding-left: 1.5em; }
+
+.content-panel h2,
+.content-panel h3,
+.content-panel h4 { color: var(--strong); margin: 1em 0 0.4em; line-height: 1.25; }
+
+.content-panel h2:first-child,
+.content-panel h3:first-child { margin-top: 0; }
+
+.content-panel a { color: var(--strong); }
+
+.content-panel img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    display: block;
+    margin: 0.5em auto;
+}
+
+.content-panel blockquote {
+    border-left: 4px solid var(--accent);
+    padding-left: 1em;
+    font-style: italic;
+}
+
+.content-panel table { border-collapse: collapse; width: 100%; }
+.content-panel th,
+.content-panel td { border: 1px solid var(--accent); padding: 0.3em 0.6em; }
+
+.panel-intro { margin-bottom: 1em; }
+
+/* News posts and events */
+.item {
+    border-top: 2px solid var(--accent);
+    padding-top: 0.8em;
+    margin-top: 0.8em;
+}
+.panel-title + .item,
+.panel-intro + .item { border-top: none; margin-top: 0; padding-top: 0; }
+.item-title { color: var(--strong); margin: 0 0 0.2em; font-size: 1.2em; }
+.item-title a { color: inherit; }
+.item-meta { font-size: 0.9em; opacity: 0.8; margin-bottom: 0.5em; }
+.item-image { max-height: 40vh; width: auto; }
+.empty { text-align: center; font-style: italic; opacity: 0.8; }
+
+/* ---- Calendar page ---- */
+.calendar-container {
+    display: flex;
+    flex-direction: column;
+}
+.calendar-wrapper {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    width: 100%;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 3px solid var(--accent);
+}
+.calendar-wrapper iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* ---- Footer ---- */
+footer {
+    font-family: var(--font-family);
+    background-color: var(--header-bg);
+    color: var(--header-text);
+    padding: clamp(0.3rem, 1vh, 0.5rem);
+    margin: 0.5vh auto;
+    width: var(--width-boxes);
+    border-radius: 1rem;
+    flex-shrink: 0;
+}
+
+footer h4 {
+    font-size: clamp(0.6rem, 1.5vw, 1rem);
+    margin: 0;
+}
+
+/* ---- Compact header: phones (narrow) and anything short (landscape phones) ----
+   Line 1: street · city.  Line 2: phone · hours. */
+@media (max-width: 768px), (max-height: 560px) {
+    body {
+        font-size: 2vh;
+    }
+
+    header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: baseline;
+        padding: 0.35rem 0.5rem;
+    }
+
+    header h1 {
+        flex-basis: 100%;
+        margin-bottom: 0.1rem;
+    }
+
+    .return-home {
+        font-size: clamp(1.4rem, min(7vw, 6vh), 2.2rem);
+    }
+
+    header h2 {
+        padding: 0.05rem 0;
+        font-size: clamp(0.85rem, min(3.6vw, 3.2vh), 1.1rem);
+        white-space: nowrap;
+    }
+
+    /* header::after is an invisible full-width item that forces the line break */
+    header h2 { order: 1; }
+    header h2.phone-number,
+    header h2.phone-number ~ h2 { order: 3; }
+    header::after {
+        content: "";
+        order: 2;
+        flex-basis: 100%;
+        height: 0;
+    }
+    header h2:nth-of-type(2)::before,
+    header h2:nth-of-type(4)::before {
+        content: "\00B7";
+        margin: 0 0.4em;
+        color: var(--accent);
+    }
+
+    .grid-container {
+        gap: 0.8vh 1.5vw;
+    }
+
+    footer {
+        padding: 0.2rem;
+    }
+
+    footer h4 {
+        font-size: 0.65rem;
+    }
+}
+
+[hidden] { display: none !important; }

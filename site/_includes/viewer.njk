@@ -1,0 +1,66 @@
+{#- The PGN Game Viewer. The games list comes from site/_data/games/ (edited under "Games" in the editor).
+     Only games that load without problems are included; see site-check.html for any that were held back. -#}
+<div class="pgn-container">
+    <h2 class="pgn-header">Game Viewer</h2>
+    <div class="pgn-tabs" role="tablist">
+        <button class="pgn-tab active" data-tab="board" role="tab" aria-selected="true">Board</button>
+        <button class="pgn-tab" data-tab="game" role="tab" aria-selected="false">Game &amp; Moves</button>
+    </div>
+    <div class="pgn-layout" data-tab="board">
+        <!-- Board Section -->
+        <div class="board-section">
+            <div class="board-wrap">
+                <div id="chessboard" class="chessboard"></div>
+            </div>
+            <div class="controls">
+                <button class="control-btn" id="startBtn">⏮ Start</button>
+                <button class="control-btn" id="prevBtn">◀ Previous</button>
+                <button class="control-btn" id="nextBtn">Next ▶</button>
+                <button class="control-btn" id="endBtn">End ⏭</button>
+                <button class="control-btn" id="flipBtn">🔄 Flip Board</button>
+                <button class="control-btn" id="analysisBtn">🔍 Analysis</button>
+            </div>
+            
+            <!-- Analysis Panel under the board -->
+            <div id="analysisPanel" class="analysis-panel">
+                <h3>Stockfish Analysis</h3>
+                <p class="analysis-status" id="analysisStatus">Click Analysis to start</p>
+                <p id="analysisEval">Evaluation: --</p>
+                <p id="analysisBestMove">Best move: --</p>
+                <p id="analysisDepth">Depth: 0</p>
+            </div>
+        </div>
+
+        <!-- Moves Section -->
+        <div class="moves-section">
+            <div class="game-selector">
+                <label for="gameSelect">Select a game:</label>
+                <select id="gameSelect">
+                    <option value="">-- Choose a game or paste PGN below --</option>
+                </select>
+            </div>
+
+            <div class="pgn-input-area">
+                <label for="pgnInput">Or paste PGN notation here:</label>
+                <textarea id="pgnInput" class="pgn-textarea" placeholder="[Event &quot;Example Game&quot;]
+[White &quot;Player 1&quot;]
+[Black &quot;Player 2&quot;]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5..."></textarea>
+                <div class="pgn-buttons">
+                    <button class="load-btn" id="loadBtn">Load Game</button>
+                    <button class="clear-btn" id="clearBtn">Clear</button>
+                </div>
+            </div>
+
+            <div id="pgnError" class="error-message" role="alert" hidden></div>
+            <div id="gameInfo" class="game-info" style="display: none;"></div>
+
+            <div id="movesDisplay" class="moves-display"></div>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<script src="assets/js/pgn-parser.js"></script>
+<script>const GAME_DATABASE = {{ games | viewerGames | json | safe }};</script>
+<script src="assets/js/viewer.js"></script>

@@ -1,4 +1,8 @@
-# Desktop Stockfish build - not used by the site (PGN_Reader loads Stockfish from cdnjs)
+# Build output and installed packages (recreated by "npm ci" / "npm run build")
+_site/
+node_modules/
+
+# Desktop Stockfish build - not used by the website (the Game Viewer loads stockfish.js from a CDN)
 stockfish-windows-x86-64/
 
 # Editor / OS clutter

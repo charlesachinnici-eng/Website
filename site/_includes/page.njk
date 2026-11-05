@@ -1,0 +1,89 @@
+{#- Layout for every file in site/pages. What appears depends on the page's "kind":
+      menu (default)   - full-screen grid of buttons, or text + a row of buttons if the page has text
+      calendar         - the Google Calendar
+      viewer           - the PGN Game Viewer
+      news-current     - the newest news posts
+      news-old         - older news posts
+      events-upcoming  - upcoming events (past ones hide themselves) -#}
+{% extends "base.njk" %}
+{% block head %}{% if kind == "viewer" %}<link rel="stylesheet" href="assets/css/viewer.css" />{% endif %}{% endblock %}
+{% block main %}
+{%- set hasText = (content | striptags | trim | length) > 0 or (content and "<img" in content) -%}
+
+{%- if kind == "calendar" %}
+<div class="panel calendar-container">
+    <h2 class="panel-title">{{ title }}</h2>
+    {% if hasText %}<div class="panel-intro">{{ content | safe }}</div>{% endif %}
+    <div class="calendar-wrapper">
+        <iframe src="{{ club.calendar_embed }}" style="border: 0" frameborder="0" title="{{ club.name }} Calendar"></iframe>
+    </div>
+</div>
+{% set barMode = true %}{% include "buttons.njk" %}
+
+{%- elif kind == "viewer" %}
+{% include "viewer.njk" %}
+{% set barMode = true %}{% include "buttons.njk" %}
+
+{%- elif kind == "news-current" or kind == "news-old" %}
+{%- set count = club.current_news_count or 5 -%}
+{%- set posts = collections.newsPosts.slice(0, count) if kind == "news-current" else collections.newsPosts.slice(count) -%}
+<main class="panel content-panel">
+    <h2 class="panel-title">{{ title }}</h2>
+    {% if hasText %}<div class="panel-intro">{{ content | safe }}</div>{% endif %}
+    {%- for post in posts %}
+    <article class="item">
+        <h3 class="item-title">{{ post.data.title }}</h3>
+        <p class="item-meta">{{ post.date | niceDate }}</p>
+        {% if post.data.image %}<img class="item-image" src="{{ post.data.image | rel }}" alt="">{% endif %}
+        <div class="item-body">{{ post.content | safe }}</div>
+    </article>
+    {%- else %}
+    <p class="empty">{{ "No news yet. Check back soon." if kind == "news-current" else "No older news yet." }}</p>
+    {%- endfor %}
+</main>
+{% set barMode = true %}{% include "buttons.njk" %}
+
+{%- elif kind == "events-upcoming" %}
+<main class="panel content-panel">
+    <h2 class="panel-title">{{ title }}</h2>
+    {% if hasText %}<div class="panel-intro">{{ content | safe }}</div>{% endif %}
+    {%- for ev in collections.clubEvents %}
+    <article class="item event" data-last-day="{{ (ev.data.end or ev.data.start) | ymd }}">
+        <h3 class="item-title">{% if ev.data.link %}<a href="{{ ev.data.link }}" target="_blank" rel="noopener noreferrer">{{ ev.data.title }}</a>{% else %}{{ ev.data.title }}{% endif %}</h3>
+        <p class="item-meta">
+            {{ ev.data.start | niceDate }}{% if ev.data.end and (ev.data.end | ymd) != (ev.data.start | ymd) %} &ndash; {{ ev.data.end | niceDate }}{% endif %}
+            {% if ev.data.time %} &middot; {{ ev.data.time }}{% endif %}
+            {% if ev.data.location %} &middot; {{ ev.data.location }}{% endif %}
+        </p>
+        {% if ev.data.image %}<img class="item-image" src="{{ ev.data.image | rel }}" alt="">{% endif %}
+        <div class="item-body">{{ ev.content | safe }}</div>
+        {% if ev.data.link %}<p><a class="item-link" href="{{ ev.data.link }}" target="_blank" rel="noopener noreferrer">More information / register</a></p>{% endif %}
+    </article>
+    {%- endfor %}
+    <p class="empty" id="noEvents" hidden>No upcoming events are listed right now. See the <a href="Calendar.html">Calendar</a> for the club schedule.</p>
+</main>
+{% set barMode = true %}{% include "buttons.njk" %}
+<script>
+  // Hide events that have already finished (checked in the visitor's browser, so the list stays current)
+  (function () {
+    const d = new Date();
+    const today = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    let shown = 0;
+    document.querySelectorAll(".event").forEach(function (el) {
+      if (el.dataset.lastDay && el.dataset.lastDay < today) el.hidden = true; else shown++;
+    });
+    if (!shown) document.getElementById("noEvents").hidden = false;
+  })();
+</script>
+
+{%- elif hasText %}
+<main class="panel content-panel">
+    <h2 class="panel-title">{{ title }}</h2>
+    <div class="panel-body">{{ content | safe }}</div>
+</main>
+{% set barMode = true %}{% include "buttons.njk" %}
+
+{%- else %}
+{% set barMode = false %}{% include "buttons.njk" %}
+{%- endif %}
+{% endblock %}

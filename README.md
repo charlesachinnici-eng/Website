@@ -2,79 +2,105 @@
 
 The public website for the Reno Chess Club, which meets at 125 West Plumb Lane, Reno, Nevada, on Thursdays from 5:30 pm to midnight.
 
-It's a plain static site: HTML pages, one shared stylesheet, and a little JavaScript. There's no build step and nothing to install, and it runs on any static host, such as GitHub Pages.
+Club volunteers edit the site in **[Pages CMS](https://pagescms.org)**, a form-based editor at [app.pagescms.org](https://app.pagescms.org). They sign in with their email address and need no GitHub account or programming knowledge. Each save is published automatically within a couple of minutes. The editors' guide is on the site itself at **`editor-help.html`**.
 
-## Pages
+## How it fits together
 
-| Page | What it is |
-|---|---|
-| `index.html` | Home: navigation buttons to every section |
-| `News.html` | News hub: current news, results at US Chess, old news, history, Western States Open, Larry Evans Memorial |
-| `Events.html` | Events hub: current club events, Quads, Challenge Ladder, Bundesliga, nearby events, "What's Your Event?" |
-| `Calendar.html` | Embedded Google Calendar (agenda view) |
-| `About.html` | About hub: FAQ, members, champions, Chess Caravan, history, club charter |
-| `Contact.html` | Contact hub: US Chess membership, Chess Caravan, New to Chess |
-| `LEM.html` | Larry Evans Memorial Open: links to the US Chess event pages |
-| `WSO.html` | Western States Open: links to the US Chess event pages |
-| `PGN_Reader.html` | Game viewer with Stockfish analysis; see [README PGN Viewer.md](README%20PGN%20Viewer.md) |
+```
+Editor (app.pagescms.org)  --saves files-->  this GitHub repo  --GitHub Actions builds-->  website (GitHub Pages)
+```
 
-These pages are still placeholders with navigation only:
-- `Bundesliga`
-- `Challenge_Ladder`
-- `Champions`
-- `Charter`
-- `Chess_Caravan`
-- `Current`
-- `Current_Events`
-- `FAQ`
-- `History`
-- `Members`
-- `Nearby_Events`
-- `New_to_Chess`
-- `Older_Events`
-- `Quads`
-- `Whats_Your_Event`
+- **Content lives in plain files under `site/`.** Text pages, news, events, games, club info and theme are all simple Markdown, YAML or JSON files. The editor reads and writes them, and so can you.
+- **[Eleventy](https://www.11ty.dev/)** turns those files into plain HTML pages in `_site/`. It runs automatically on every change (`.github/workflows/deploy.yml`).
+- **Visitors get plain static HTML, CSS and JavaScript.** There's no server or database.
 
-## Layout
+## Where things are
 
-Every page fits on one screen and the page itself never scrolls, on desktops and phones alike.
-- The body is exactly the visible screen height (`100dvh`, which excludes the phone's address bar), laid out as header, content, footer.
-- **Button pages** use a grid that fills whatever space is left, so 4-, 6- and 8-button pages all fill the screen.
-- **Header:** on desktops and laptops it scales with the screen height, taking about 20% of it. On phones and other short screens it collapses to two lines: street · city, then phone · hours.
-- **Calendar and Game Viewer:** where content can't fit, only an inner box scrolls (the calendar frame, the move list), never the page.
+| Path | What it is | Edited in the editor as |
+|---|---|---|
+| `site/_data/club.json` | Club name, address, phone, hours, footer, calendar address | Club info |
+| `site/_data/theme.json` | Chosen colour scheme, font, background picture | Colors & look |
+| `site/_data/schemes.js` | The approved colour schemes and fonts (developer-only) | - |
+| `site/pages/*.md` | One file per page: title, optional text, buttons. `News.md` becomes `News.html`. | Pages |
+| `site/news/*.md` | News posts | News |
+| `site/events/*.md` | Events | Events |
+| `site/_data/games/*.yml` | Games in the Game Viewer's list | Games |
+| `site/images/uploads/` | Uploaded pictures, including the background | (picture fields) |
+| `site/_includes/` | Page templates: `base.njk` (header, footer, theme), `page.njk` (all page types), `viewer.njk` | - |
+| `site/assets/` | `css/style.css`, `css/viewer.css`, `js/viewer.js`, `js/pgn-parser.js` | - |
+| `site/site-check.njk` | `site-check.html`: report of games held back and broken buttons, for editors | - |
+| `site/editor-help.md` | `editor-help.html`: the editors' guide | - |
+| `.pages.yml` | What the editor shows: sections, fields, labels, help text | - |
+| `eleventy.config.js` | Build settings, filters, and the build-time game check | - |
+| `uscf-proxy-worker.js` | Cloudflare Worker for fetching US Chess pages. Not used yet; kept for the planned US Chess integration. | - |
 
-Shared styles live in `style.css`. Colours and other settings are CSS variables in `:root`. The two pages with their own `<style>` blocks are `Calendar.html` and `PGN_Reader.html`.
+### Page kinds
 
-## Working on the site
+Most pages are **menu** pages: a full-screen grid of buttons, or, if the page has text, a scrolling text box with a row of buttons underneath. A few pages are special, set by a hidden `kind:` line in their file:
 
-1. Open the folder in VS Code and install the recommended **Live Server** extension when prompted (`.vscode/extensions.json`).
-2. Right-click any page and choose **Open with Live Server**. Use Live Server rather than opening files directly, because the Game Viewer's engine needs a real `http://` address.
-3. Commit and push with git. The repository is `github.com/charlesachinnici-eng/Website`.
+| Page | `kind` | Shows |
+|---|---|---|
+| `Calendar` | `calendar` | The Google Calendar (address in Club info) |
+| `PGN_Reader` | `viewer` | The Game Viewer; see [README PGN Viewer.md](README%20PGN%20Viewer.md) |
+| `Current` | `news-current` | The newest news posts |
+| `Older_Events` | `news-old` | Older news posts |
+| `Current_Events` | `events-upcoming` | Upcoming events; past events hide themselves in the visitor's browser |
+
+## Layout rules
+
+- **Every page fits on one screen.** The page itself never scrolls; only inner boxes do (page text, news, the calendar, the move list).
+- **The header shrinks on small screens.** On desktops it scales with the screen height (about 20% of it); on phones and short screens it collapses to two lines.
+- **Text colours are automatic.** The build picks light or dark text for each background, whichever is more readable, so no scheme can produce unreadable text.
+
+## One-time setup (owner)
+
+1. **Turn on publishing.** On GitHub, open the repo, then **Settings > Pages > Build and deployment > Source: GitHub Actions**. The next push publishes the site. The address is shown on that same Settings page, normally `https://charlesachinnici-eng.github.io/Website/`. GitHub Pages on the free plan needs the repo to be public.
+2. **Connect the editor.**
+   1. Go to [app.pagescms.org](https://app.pagescms.org) and sign in with GitHub, using your own account.
+   2. Install the Pages CMS GitHub App on this repository when asked.
+   3. Open the repository. It picks up `.pages.yml` automatically.
+3. **Invite editors.** In Pages CMS, add each editor's email address as a **collaborator** on this repository. They get an email invitation and sign in with that email; no GitHub account is needed.
+4. Send editors the link to **`editor-help.html`** on the live site.
+
+Only you (a GitHub user with access to the repo) can change `.pages.yml` or manage collaborators. Editors can change content and pictures only. Each editor's name is recorded on their changes in the repo history.
+
+## Working on the code
+
+```
+npm install      # once
+npm start        # builds and serves at http://localhost:8080, rebuilding as you save
+npm run build    # one-off build into _site/
+```
+
+`_site/` and `node_modules/` are build output and are not committed.
+
+### Adding a colour scheme
+
+1. Add an entry in `site/_data/schemes.js`.
+2. Add its key to the `scheme` list under "Colors & look" in `.pages.yml`.
+3. Check readability: the build picks text colours, but keep each scheme's `strong` colour dark enough to read on its `panel` colour.
+
+### Moving to another host or address
+
+All links are relative, so the built site works at any address or sub-folder. To publish somewhere else:
+- run `npm ci && npm run build` and upload `_site/`, or
+- replace the `deploy` job in `.github/workflows/deploy.yml` with the new host's upload step (FTP, Netlify, Cloudflare Pages and so on).
+
+The editor keeps working unchanged, because it edits this repo rather than the host.
 
 ### Conventions
 
-- **Case-sensitive file names.** Windows doesn't care about capitalisation in file names, but web hosts do: a link to `New_to_Chess.html` won't find `New_to_chess.html`. Match link capitalisation exactly.
-- **No spaces in page file names.** Use underscores.
-- **Each page's `<footer>` goes inside `<body>`.** The one-screen layout depends on it.
-
-## Other files
-
-| File | Purpose |
-|---|---|
-| `style.css` | Shared styles for every page |
-| `Background_image.jpg` | Site background |
-| `uscf-proxy-worker.js` | Cloudflare Worker that proxies US Chess pages around browser CORS limits. Not currently used by any page; kept for the planned US Chess integration. |
-| `stockfish-windows-x86-64/` | Desktop Stockfish build. The site doesn't use it, and it's excluded from git. |
+- **Page file names** are the page addresses (`News.md` becomes `News.html`). They're case-sensitive on the web, and they can't be renamed from the editor, so links don't break.
+- **No template code in content.** Content files are never run as template code, so editors can type anything safely.
 
 ## Known issues
 
-- On `About.html`, the button labelled **Calendar** links to `Champions.html`.
-- On `Contact.html`, **Contact Us** links back to the Contact page itself.
-- On `WSO.html`, **This Year's Western States Open** links to the home page.
+- On `Contact`, the **Contact Us** button links back to the Contact page itself. It's waiting for the planned inquiry form.
+- On `WSO`, **This Year's Western States Open** links to the home page until there's an event page.
 
 ## Planned
 
-- Content for the placeholder pages and more functionality on others
+- Content for the placeholder pages
 - A donation option
 - Automatic listing of all the club's events from US Chess
 - Notifying club officers (e.g. by text) when someone sends an inquiry

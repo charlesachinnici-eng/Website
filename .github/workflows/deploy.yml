@@ -1,0 +1,47 @@
+# Builds the site and publishes it to GitHub Pages every time something changes on main
+# (including every save made in the editor). Takes about a minute.
+#
+# One-time setup: GitHub repo > Settings > Pages > Build and deployment > Source: "GitHub Actions".
+#
+# To move to a different host later: run "npm ci && npm run build" and upload the _site folder,
+# or replace the "deploy" job below with that host's upload step (FTP, Netlify, Cloudflare Pages...).
+name: Publish website
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:   # lets you re-publish by hand from the Actions tab
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true   # if two saves happen quickly, only the latest is published
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

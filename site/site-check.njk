@@ -1,0 +1,57 @@
+---
+permalink: site-check.html
+title: Site check
+kind: check
+eleventyExcludeFromCollections: true
+---
+{#- A plain report for editors: open site-check.html after publishing to see if anything needs fixing. -#}
+{% extends "base.njk" %}
+{% block head %}<meta name="robots" content="noindex" />{% endblock %}
+{% block main %}
+{%- set pageSlugs = [] -%}
+{%- for p in collections.all %}{% if p.inputPath.indexOf("/pages/") != -1 %}{% set pageSlugs = (pageSlugs.push(p | pageSlug), pageSlugs) %}{% endif %}{% endfor -%}
+<main class="panel content-panel">
+  <h2 class="panel-title">Site check</h2>
+  <p>This page lists anything the last update couldn't publish properly. If everything says <strong>OK</strong>, there's nothing to do.</p>
+
+  <h3>Games in the Game Viewer</h3>
+  <ul>
+  {%- for g in games | values | sort(false, false, "order") %}
+    {%- set r = g.pgn | checkGame %}
+    <li><strong>{{ g.name }}</strong>:
+      {% if r.plies == 0 %}<span class="bad">NOT SHOWN - no moves could be read.{% if r.errors.length %} First problem at {{ r.errors[0].label }}.{% endif %}</span>
+      {% elif r.errors.length %}<span class="bad">NOT SHOWN - {{ r.errors[0].label }} isn't a legal move there{% if r.errors[0].inVariation %} (in a side line){% endif %}. Fix the PGN in the editor and save again.</span>
+      {% else %}<span class="good">OK</span> ({{ (r.plies / 2) | round(0, "ceil") }} moves){% endif %}</li>
+  {%- else %}
+    <li>No games yet.</li>
+  {%- endfor %}
+  </ul>
+
+  <h3>Buttons that point to a missing page</h3>
+  {%- set broken = 0 -%}
+  <ul>
+  {%- for p in collections.all %}{% if p.inputPath.indexOf("/pages/") != -1 %}
+    {%- for b in p.data.buttons %}
+      {%- if b.page and (b.page | pageHref | replace(".html", "")) not in pageSlugs %}
+        {%- set broken = broken + 1 %}
+    <li><span class="bad">Page "{{ p.data.title }}", button "{{ b.label }}"</span> points to a page that no longer exists.</li>
+      {%- elif not b.page and not b.url %}
+        {%- set broken = broken + 1 %}
+    <li><span class="bad">Page "{{ p.data.title }}", button "{{ b.label }}"</span> has no page or web address, so it goes nowhere.</li>
+      {%- endif %}
+    {%- endfor %}
+  {%- endif %}{% endfor %}
+  {%- if broken == 0 %}<li><span class="good">OK</span>, every button goes somewhere.</li>{% endif %}
+  </ul>
+
+  <h3>Content</h3>
+  <ul>
+    <li>News posts: {{ collections.newsPosts.length }} (the newest {{ club.current_news_count or 5 }} appear on Current News)</li>
+    <li>Events: {{ collections.clubEvents.length }} (past events hide themselves automatically)</li>
+    <li>Pages: {{ pageSlugs.length }}</li>
+  </ul>
+  <p class="item-meta">Last updated {{ page.date.toISOString().slice(0, 16).replace("T", " ") }} UTC.</p>
+</main>
+<nav class="button-bar"><a class="btn" href="index.html">Home</a></nav>
+<style>.bad{color:#b3261e;font-weight:bold}.good{color:#1e7b34;font-weight:bold}.content-panel h3{margin-top:1em}</style>
+{% endblock %}

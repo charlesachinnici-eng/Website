@@ -1,0 +1,19 @@
+{
+  "name": "reno-chess-club-site",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "eleventy",
+    "start": "eleventy --serve"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@11ty/eleventy": "^3.1.8",
+    "chess.js": "0.10.3",
+    "js-yaml": "^4.3.2"
+  },
+  "type": "module",
+  "private": true
+}

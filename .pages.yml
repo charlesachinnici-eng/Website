@@ -1,0 +1,264 @@
+# Pages CMS configuration: defines what editors see in the editor at https://app.pagescms.org
+# Docs: https://pagescms.org/docs/
+#
+# Editors sign in with their email (invited as "collaborators"), so they never need GitHub.
+# Every save is published to the website automatically within a minute or two.
+
+media:
+  input: site/images/uploads
+  output: /images/uploads
+  rename: safe
+  categories: [image]
+
+settings:
+  content:
+    merge: true          # keep page settings the editor doesn't show (e.g. which pages are special)
+  commit:
+    identity: user       # record which editor made each change
+    templates:
+      create: "Add {path} (by {userName} via editor)"
+      update: "Update {path} (by {userName} via editor)"
+      delete: "Delete {path} (by {userName} via editor)"
+      rename: "Rename {oldPath} to {newPath} (by {userName} via editor)"
+
+components:
+  buttons:
+    label: Buttons
+    description: The buttons on this page, in order. Each one goes either to another page of this site or to an outside web address.
+    type: object
+    list:
+      collapsible:
+        collapsed: true
+        summary: "{label}"
+    fields:
+      - name: label
+        label: Button text
+        type: string
+        required: true
+      - name: page
+        label: Goes to this page of our site
+        description: Choose a page here, OR fill in a web address below - not both.
+        type: reference
+        options:
+          collection: pages
+          value: "{path}"
+          label: "{title}"
+          search: title
+      - name: url
+        label: Or goes to this web address
+        description: For other websites, e.g. https://new.uschess.org/ (leave empty if you chose a page above)
+        type: string
+        pattern:
+          regex: "^$|^https?://.+"
+          message: "Web addresses start with https://"
+      - name: new_tab
+        label: Open in a new browser tab
+        description: Usually on for other websites, off for our own pages.
+        type: boolean
+
+content:
+  # ----------------------------------------------------------------
+  - name: club
+    label: Club info
+    type: file
+    path: site/_data/club.json
+    format: json
+    operations: { create: false, delete: false }
+    fields:
+      - { name: name, label: Club name, type: string, required: true }
+      - { name: address_line1, label: Street address, type: string }
+      - { name: address_line2, label: "City, state, ZIP", type: string }
+      - name: map_link
+        label: Map link
+        description: Where the address goes when clicked (e.g. a Google Maps link).
+        type: string
+      - { name: phone, label: Phone, type: string }
+      - { name: hours, label: Meeting times, description: "Shown in the header, e.g. Thursdays 5:30pm-Midnight", type: string }
+      - { name: footer_text, label: Footer text, type: string }
+      - name: current_news_count
+        label: News posts on the Current News page
+        description: The newest posts appear on Current News; older ones move to Old News automatically.
+        type: number
+        options: { min: 1, max: 30 }
+      - name: calendar_embed
+        label: Google Calendar embed address
+        description: From Google Calendar > Settings > your calendar > "Integrate calendar" > Embed code (the address inside src="...").
+        type: string
+
+  # ----------------------------------------------------------------
+  - name: theme
+    label: Colors & look
+    type: file
+    path: site/_data/theme.json
+    format: json
+    operations: { create: false, delete: false }
+    fields:
+      - name: scheme
+        label: Color scheme
+        description: Text colors are chosen automatically so everything stays readable.
+        type: select
+        required: true
+        options:
+          values:
+            - { name: classic, label: "Classic Walnut (browns and tan)" }
+            - { name: tournament, label: "Tournament Green" }
+            - { name: midnight, label: "Midnight Blue" }
+            - { name: burgundy, label: "Burgundy & Gold" }
+            - { name: slate, label: "Slate Gray" }
+      - name: font
+        label: Font
+        type: select
+        required: true
+        options:
+          values:
+            - { name: georgia, label: "Georgia (classic serif)" }
+            - { name: palatino, label: "Palatino (elegant serif)" }
+            - { name: trebuchet, label: "Trebuchet (friendly sans-serif)" }
+            - { name: verdana, label: "Verdana (very readable sans-serif)" }
+      - name: background_image
+        label: Background picture
+        description: A large landscape photo works best (at least 1600 pixels wide).
+        type: image
+
+  # ----------------------------------------------------------------
+  - name: pages
+    label: Pages
+    type: collection
+    path: site/pages
+    format: yaml-frontmatter
+    exclude: [pages.11tydata.js]   # build settings, not content
+    filename:
+      template: "{primary}.md"
+      field: false
+    operations: { rename: false }
+    view:
+      fields: [title]
+      primary: title
+      sort: [title]
+      default: { sort: title, order: asc }
+      search: [title]
+    fields:
+      - name: title
+        label: Page title
+        type: string
+        required: true
+      - name: body
+        label: Page text
+        description: Optional. Leave empty for a page of big buttons only. With text, the buttons become a row underneath.
+        type: rich-text
+        options: { format: markdown }
+      - name: buttons
+        component: buttons
+      - name: kind
+        type: string
+        hidden: true
+
+  # ----------------------------------------------------------------
+  - name: news
+    label: News
+    type: collection
+    path: site/news
+    format: yaml-frontmatter
+    exclude: [news.11tydata.json]   # build settings, not content
+    filename:
+      template: "{year}-{month}-{day}-{primary}.md"
+      field: false
+    view:
+      fields: [title, date]
+      primary: title
+      sort: [date, title]
+      default: { sort: date, order: desc }
+      search: [title]
+    fields:
+      - { name: title, label: Headline, type: string, required: true }
+      - name: date
+        label: Date
+        description: Newest posts appear first.
+        type: date
+        required: true
+        options: { format: yyyy-MM-dd }
+      - name: image
+        label: Picture (optional)
+        type: image
+      - name: body
+        label: Story
+        type: rich-text
+        options: { format: markdown }
+
+  # ----------------------------------------------------------------
+  - name: events
+    label: Events
+    type: collection
+    path: site/events
+    format: yaml-frontmatter
+    exclude: [events.11tydata.json]   # build settings, not content
+    filename:
+      template: "{year}-{month}-{day}-{primary}.md"
+      field: false
+    view:
+      fields: [title, start]
+      primary: title
+      sort: [start, title]
+      default: { sort: start, order: desc }
+      search: [title]
+    fields:
+      - { name: title, label: Event name, type: string, required: true }
+      - name: start
+        label: Date (first day)
+        type: date
+        required: true
+        options: { format: yyyy-MM-dd }
+      - name: end
+        label: Last day (only for events longer than one day)
+        description: The event disappears from Current Club Events after this day (or after the first day if this is empty).
+        type: date
+        default: ""
+        options: { format: yyyy-MM-dd }
+      - { name: time, label: "Time (optional)", description: "e.g. 10:00 am, or Rounds at 10, 2 and 6", type: string }
+      - { name: location, label: "Place (optional)", type: string }
+      - name: link
+        label: "More information / registration link (optional)"
+        description: e.g. the US Chess event page. Starts with https://
+        type: string
+        pattern:
+          regex: "^$|^https?://.+"
+          message: "Web addresses start with https://"
+      - name: image
+        label: Picture (optional)
+        type: image
+      - name: body
+        label: Description
+        type: rich-text
+        options: { format: markdown }
+
+  # ----------------------------------------------------------------
+  - name: games
+    label: Games (Game Viewer)
+    type: collection
+    path: site/_data/games
+    format: yaml
+    filename:
+      template: "{primary}.yml"
+      field: false
+    view:
+      fields: [name, order]
+      primary: name
+      sort: [order, name]
+      default: { sort: order, order: asc }
+      search: [name]
+    fields:
+      - name: name
+        label: Name shown in the game list
+        description: e.g. "Smith vs Jones - Club Championship 2026"
+        type: string
+        required: true
+      - name: order
+        label: Position in the list
+        description: 1 = top of the list. Games with the same number are listed alphabetically.
+        type: number
+        options: { min: 1 }
+      - name: pgn
+        label: Game (PGN)
+        description: Paste the whole game, including the [Event "..."] lines if you have them. After saving, check site-check.html to confirm the game was accepted.
+        type: text
+        required: true

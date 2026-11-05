@@ -1,0 +1,48 @@
+{#- Shared frame for every page: head, theme colours, header, footer. -#}
+{%- set sch = schemes.schemes[theme.scheme] or schemes.schemes.classic -%}
+{%- set fnt = schemes.fonts[theme.font] or schemes.fonts.georgia -%}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{% if title and (page | pageSlug) != "index" %}{{ club.name }} - {{ title }}{% else %}{{ club.name }}{% endif %}</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  {%- block head %}{% endblock %}
+  <style>
+    /* Theme: "{{ sch.label }}" + {{ fnt.label }}. Chosen in the editor under Site settings -> Theme. */
+    :root {
+      --font-family: {{ fnt.stack | safe }};
+      --header-bg: {{ sch.header }};
+      --header-text: {{ sch.header | readableOn }};
+      --button-bg: {{ sch.button }};
+      --button-text: {{ sch.button | readableOn }};
+      --button-hover-bg: {{ sch.buttonHover }};
+      --button-hover-text: {{ sch.buttonHover | readableOn }};
+      --panel-bg: {{ sch.panel }};
+      --panel-text: {{ sch.panel | readableOn }};
+      --accent: {{ sch.accent }};
+      --strong: {{ sch.strong }};
+      --strong-text: {{ sch.strong | readableOn }};
+      --board-light: {{ sch.boardLight }};
+      --board-dark: {{ sch.boardDark }};
+    }
+    /* set here (not in style.css) so the image path is relative to the page */
+    body { background-image: url("{{ theme.background_image | rel }}"); }
+  </style>
+</head>
+<body class="kind-{{ kind or 'menu' }}">
+<header>
+    <h1><a class="return-home" href="index.html">{{ club.name }}</a></h1>
+    <h2><a class="address" target="_blank" rel="noopener noreferrer" href="{{ club.map_link }}">{{ club.address_line1 }}</a></h2>
+    <h2><a class="address" target="_blank" rel="noopener noreferrer" href="{{ club.map_link }}">{{ club.address_line2 }}</a></h2>
+    <h2 class="phone-number"><a class="address" href="tel:{{ club.phone | replace('-', '') | replace(' ', '') }}">{{ club.phone }}</a></h2>
+    <h2>{{ club.hours }}</h2>
+</header>
+{% block main %}{% endblock %}
+<footer>
+    <h4>{{ club.footer_text }}</h4>
+</footer>
+{%- block scripts %}{% endblock %}
+</body>
+</html>
