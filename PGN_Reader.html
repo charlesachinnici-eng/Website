@@ -1279,6 +1279,9 @@ document.getElementById('flipBtn').addEventListener('click', flipBoard);
 document.getElementById('analysisBtn').addEventListener('click', toggleAnalysis);
 
 document.addEventListener('keydown', (e) => {
+    // Ignore shortcuts while typing in the PGN box, the game list, or any other form field
+    const t = e.target;
+    if (t.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName)) return;
     if (e.key === 'ArrowLeft') goToPrevious();
     if (e.key === 'ArrowRight') goToNext();
     if (e.key === 'Home') goToStart();

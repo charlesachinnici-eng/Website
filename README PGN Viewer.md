@@ -1,152 +1,99 @@
-# Enhanced PGN Reader with Chess Engine
+# PGN Game Viewer
 
-## What's Been Fixed and Improved
+`PGN_Reader.html` is the Reno Chess Club's game viewer. It plays through chess games in PGN format, shows variations and annotations, and can analyse any position with the Stockfish engine. Everything runs in the browser, and the page is a single self-contained file plus the shared `style.css`.
 
-### 1. ✅ Board Square Visibility - FIXED
-**Problem:** Chess board squares were not visible
-**Solution:**
-- Added proper CSS classes for light and dark squares
-- Implemented clear borders on each square
-- Used better color contrast (#f0d9b5 for light squares, #b58863 for dark)
-- Added CSS variables for easy customization
+## Using the viewer
 
-### 2. 🔧 Chess Engine Interface - ADDED
-**New Features:**
-- Stockfish chess engine integration
-- Real-time position analysis
-- Depth-configurable analysis (1-30 ply)
-- Engine evaluation display with best moves
-- "Analyze Position" and "Stop Analysis" buttons
+**Load a game** in one of two ways:
+- Pick one of the built-in games from **Select a game**:
+  - Kasparov vs Topalov, 1999 (Wijk aan Zee)
+  - Fischer vs Spassky, 1972 (World Championship, Game 6)
+  - Morphy vs Duke of Brunswick, 1858 (the Opera Game)
+  - Club Qualifier, 2026 (Reno Chess Club), an annotated club game
+- Paste PGN into the text box and press **Load Game**. **Clear** empties the box and the board.
 
-**How to Use the Engine:**
-1. Navigate to any position in the game
-2. Click "Analyze Position" button
-3. Watch the engine output panel for analysis
-4. Adjust depth slider for deeper/faster analysis
-5. Engine shows evaluation score and principal variation
+**Move through the game:**
+- **⏮ Start / ◀ Previous / Next ▶ / End ⏭**
+- Click any move in the move list to jump straight to it. Variations are shown indented and in italics, and you can click them too.
+- **🔄 Flip Board** shows the position from Black's side.
 
-**Note:** The engine requires stockfish.js to be available. In the current implementation, it attempts to load from CDN. For production use, you may want to:
-- Download stockfish.js from https://github.com/nmrugg/stockfish.js/
-- Host it locally in your project
-- Update the Worker path in the ChessEngine class
+**Keyboard shortcuts:**
 
-### 3. 🎨 UI Customization - ADDED
-**Customizable Elements:**
-- Light square color
-- Dark square color
-- Highlight color
-- Font family (5 options: Bitter, Roboto, Merriweather, Georgia, Arial)
-- Move panel theme (Dark, Light, Blue, Green)
+| Key | Action |
+|---|---|
+| ← | Previous move |
+| → | Next move |
+| Home | Start of game |
+| End | End of game |
 
-**How to Use:**
-1. Use the color pickers to change board colors
-2. Select different fonts from dropdown
-3. Choose move panel themes
-4. Click "Reset Defaults" to restore original colors
+Shortcuts are ignored while you're typing in the PGN box or using the game list.
 
-### 4. 📊 Additional Improvements
-- Better CSS organization with CSS variables
-- Improved responsive design
-- Cleaner, more modern UI
-- Better contrast for readability
-- Enhanced move highlighting
-- Professional styling throughout
+**Engine analysis:** press **🔍 Analysis** to start Stockfish on the current position, and press it again to stop. The panel under the board shows:
+- the evaluation, in pawns or as "mates in N"
+- the best move, in engine notation (e.g. `g1f3` means the piece on g1 moves to f3)
+- the search depth reached (analysis runs up to depth 45)
 
-## Usage Instructions
+The analysis follows you as you step through the game.
 
-1. **Open the HTML file** in a modern web browser (Chrome, Firefox, Edge, Safari)
+### On phones
 
-2. **Navigate games:**
-   - Use dropdown to select games
-   - Arrow keys to move through moves
-   - Home/End for first/last move
-   - PageUp/PageDown for previous/next game
+The page always fits on one screen. On narrow screens (968 px wide or less), **Board** and **Game & Moves** tabs switch between the board and the game picker, paste box and move list. Loading a game switches back to the Board tab automatically.
 
-3. **Customize appearance:**
-   - Adjust colors using color pickers
-   - Change fonts for better readability
-   - Try different move panel themes
+## Supported PGN
 
-4. **Analyze positions:**
-   - Click "Analyze Position" to start engine analysis
-   - Watch evaluation and best moves in real-time
-   - Stop analysis anytime
+| Feature | Example |
+|---|---|
+| Header tags (read but not displayed as moves) | `[White "Paul Morphy"]` |
+| Move numbers, including Black's | `12.` `12...` |
+| Standard algebraic moves, checks, mates, promotions | `Nf3` `exd5+` `Qxf7#` `e8=Q` |
+| Castling, with letters or zeros | `O-O` `O-O-O` `0-0` |
+| Comments in braces | `{An interesting idea}` |
+| Comments to end of line | `; also playable` |
+| Variations, including nested ones | `(12. Rc1 Ba6 (12... Nb6))` |
+| Numeric annotation glyphs | `$1` `$6` |
+| Symbol annotations | `!` `?` `!!` `??` `!?` `?!` |
+| Results | `1-0` `0-1` `1/2-1/2` `*` |
 
-## Keyboard Shortcuts
+Unrecognised characters are skipped, so stray punctuation in a pasted game doesn't break the load.
 
-- **Home** - First move
-- **End** - Last move
-- **Left Arrow** - Previous move
-- **Right Arrow** - Next move
-- **Up/Page Up** - Previous game
-- **Down/Page Down** - Next game
-- **F** - Flip board
-- **Spacebar/P** - Play/Pause
+## Running it locally
 
-## Browser Compatibility
+Use a local web server rather than opening the file directly. Stockfish runs as a Web Worker, and browsers don't allow that from `file://` pages. In VS Code, install the **Live Server** extension (the workspace recommends it), then right-click `PGN_Reader.html` and choose **Open with Live Server**.
 
-Works best in:
-- Chrome 90+
-- Firefox 88+
-- Edge 90+
-- Safari 14+
+## How it works
 
-## Technical Notes
+- **Parsing:** `parsePGNMoves()` strips the header tags. `tokenizePGN()` splits the movetext into tokens (moves, comments, variations, annotations, results). `buildGameTree()` builds a tree of `GameNode`s: the main line is each node's first child, and variations hang off `variations`. Each node stores its position as a FEN.
+- **Move legality:** checked by [chess.js](https://github.com/jhlywa/chess.js) 0.10.3.
+- **Board:** a CSS grid of 64 squares using Unicode chess pieces. It sizes itself to the largest square that fits the available space (CSS container queries). Squares are locked to exactly 1/8 of the board, so a large piece glyph can't stretch a row or column.
+- **Engine:** [stockfish.js](https://github.com/nmrugg/stockfish.js) 10.0.2, loaded as a Web Worker and driven over the UCI protocol.
 
-### Chess Engine Integration
-The engine integration uses Web Workers to run Stockfish without blocking the UI. The engine communicates via UCI protocol.
+### Dependencies (both from cdnjs, nothing to install)
 
-To use a local stockfish.js file:
-```javascript
-this.engine = new Worker('path/to/stockfish.js');
-```
+- `chess.js` 0.10.3: https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js
+- `stockfish.js` 10.0.2: https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js
 
-### CSS Variables
-All colors are controlled via CSS custom properties in `:root`:
-```css
---light-square: #f0d9b5;
---dark-square: #b58863;
---highlight-color: #ffff00;
---primary-font: 'Bitter', serif;
-```
+The `stockfish-windows-x86-64` folder in the project is a desktop build of the engine. The web page doesn't use it, and it's excluded from git by `.gitignore`.
 
-## Files Included
+## Customising
 
-- `improved_pgn_reader.html` - Main application file (standalone, all-in-one)
+- **Square colours:** `.square.light` (`#ccb89a`) and `.square.dark` (`#9a7454`) in the page's `<style>` block.
+- **Piece size:** the `font-size` in the `.square` rule, currently `calc(min(100cqw, 100cqh) * 0.0775)`. Raise `0.0775` for bigger pieces. Non-pawn pieces are drawn 12% larger than pawns (`1.12em`).
+- **Sample games:** the game list in the page's script. Each entry has a `name` and a `pgn`.
 
-## Future Enhancement Ideas
+## Known limitations
 
-1. **Engine Features:**
-   - Multi-PV analysis (show multiple lines)
-   - Analysis arrows on board
-   - Save engine analysis
-   - Cloud engine option
+- **Illegal moves are dropped silently.** If a pasted PGN contains an illegal or mistyped move, that move and everything after it in that line are skipped. The game just ends early, with no error message, and the browser console names the bad move.
+- **Games must start from the standard position.** `[FEN "..."]` / `[SetUp "1"]` headers are ignored.
+- **One game at a time.** If you paste a file containing several games, the first game loads and the later ones are mostly discarded as illegal moves. Paste games one at a time.
+- **Best move is shown in engine notation** (e.g. `e2e4`), not as `e4`.
 
-2. **UI Features:**
-   - Themes (Dark mode, High contrast)
-   - Board piece sets
-   - Sound effects for moves
-   - Export positions as FEN/PGN
+## Change log
 
-3. **Analysis Tools:**
-   - Position evaluation graph
-   - Blunder detection
-   - Opening book integration
-   - Endgame tablebase
-
-## Known Limitations
-
-1. Stockfish must be available via CDN or local file
-2. Analysis depth limited to 30 for performance
-3. Single-thread engine (for better compatibility)
-
-## Credits
-
-- Original PGN Reader: Your existing codebase
-- Stockfish: Chess engine by Tord Romstad, Marco Costalba, Joona Kiiski
-- jQuery: 3.6.0
-- Google Fonts: Bitter, Roboto, Merriweather
-
----
-
-**Enjoy your enhanced PGN reader!** 🎉
+- **Nov 2026**
+  - Fixed a hang: a PGN ending in `*`, or containing `!`/`?` annotations or a `1/2-1/2` result, sent the parser into an infinite loop that froze and then reset the page.
+  - Added `;` comments and zero-castling.
+  - Locked square sizes and reduced the piece size.
+  - One-screen layout, with Board / Game tabs on phones.
+  - Keyboard shortcuts no longer fire while typing in the PGN box.
+- **Feb 2026**
+  - Removed the highlight on the moved piece.
