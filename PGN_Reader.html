@@ -89,8 +89,9 @@
       height: min(100cqw, 100cqh);
       aspect-ratio: 1;
       display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      grid-template-rows: repeat(8, 1fr);
+      /* minmax(0, 1fr): squares stay exactly 1/8 of the board no matter what is on them */
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      grid-template-rows: repeat(8, minmax(0, 1fr));
       border: 3px solid var(--primary-dark-color);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
       background-color: #ccb89a;
@@ -102,7 +103,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: calc(min(100cqw, 100cqh) * 0.085);
+      /* piece size = a fixed fraction of the square (board / 8 * 0.62) */
+      font-size: calc(min(100cqw, 100cqh) * 0.0895);
+      line-height: 1;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
       cursor: pointer;
       user-select: none;
     }
@@ -123,7 +129,8 @@
     .square .piece-rook,
     .square .piece-bishop,
     .square .piece-knight {
-      font-size: 1.15em;
+      font-size: 1.12em;
+      line-height: 1;
     }
 
     .controls {
@@ -655,17 +662,27 @@ function parsePGNMoves(pgn) {
 function tokenizePGN(text) {
     const tokens = [];
     let i = 0;
-    
+    // Move-suffix annotations written as symbols, mapped to their standard NAG codes
+    const SUFFIX_NAGS = { '!': '$1', '?': '$2', '!!': '$3', '??': '$4', '!?': '$5', '?!': '$6' };
+
     while (i < text.length) {
         while (i < text.length && /\s/.test(text[i])) i++;
         if (i >= text.length) break;
-        
-        if (text[i] === '{') {
+
+        const rest = text.substring(i);
+        let m;
+
+        if (text[i] === '{') {                                  // { comment }
             const start = i + 1;
             i++;
             while (i < text.length && text[i] !== '}') i++;
             tokens.push({ type: 'comment', value: text.substring(start, i).trim() });
             i++;
+        }
+        else if (text[i] === ';') {                             // ; comment to end of line
+            const start = i + 1;
+            while (i < text.length && text[i] !== '\n') i++;
+            tokens.push({ type: 'comment', value: text.substring(start, i).trim() });
         }
         else if (text[i] === '(') {
             tokens.push({ type: 'var_start' });
@@ -675,28 +692,38 @@ function tokenizePGN(text) {
             tokens.push({ type: 'var_end' });
             i++;
         }
-        else if (text[i] === '$') {
+        else if (text[i] === '$') {                             // $6 style NAG
             const start = i;
             i++;
             while (i < text.length && /\d/.test(text[i])) i++;
             tokens.push({ type: 'nag', value: text.substring(start, i) });
         }
-        else if (/\d/.test(text[i])) {
+        else if ((m = rest.match(/^(1-0|0-1|1\/2-1\/2|\*)/))) {  // game result
+            tokens.push({ type: 'result', value: m[1] });
+            i += m[1].length;
+        }
+        else if ((m = rest.match(/^0-0(-0)?/))) {               // castling written with zeros
+            tokens.push({ type: 'move', value: m[1] ? 'O-O-O' : 'O-O' });
+            i += m[0].length;
+        }
+        else if (/\d/.test(text[i])) {                          // move number: 12. or 12...
             while (i < text.length && /[\d.]/.test(text[i])) i++;
         }
+        else if ((m = rest.match(/^[a-zA-Z][a-zA-Z0-9+#=\-]*/))) {  // a move, e.g. Nf3, exd5+, e8=Q#
+            tokens.push({ type: 'move', value: m[0] });
+            i += m[0].length;
+        }
+        else if ((m = rest.match(/^[!?]+/))) {                  // Nf3! / Bxc4?! annotations
+            if (SUFFIX_NAGS[m[0]]) tokens.push({ type: 'nag', value: SUFFIX_NAGS[m[0]] });
+            i += m[0].length;
+        }
         else {
-            const start = i;
-            while (i < text.length && /[a-zA-Z0-9+#=\-]/.test(text[i])) i++;
-            const value = text.substring(start, i);
-            
-            if (['1-0', '0-1', '1/2-1/2', '*'].includes(value)) {
-                tokens.push({ type: 'result', value });
-            } else {
-                tokens.push({ type: 'move', value });
-            }
+            // Anything else (stray punctuation, odd characters): skip it.
+            // Always advancing here is what guarantees the loop can never hang.
+            i++;
         }
     }
-    
+
     return tokens;
 }
 

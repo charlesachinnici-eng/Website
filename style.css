@@ -53,23 +53,26 @@ body {
     overscroll-behavior: none;   /* no rubber-band bounce on phones */
 }
 
+/* Header sizes scale with the screen HEIGHT (vh), so the full 5-line header
+   takes roughly the same share of the screen (~20%) on any laptop or monitor.
+   min(...vw) keeps it from getting too wide on narrow windows. */
 .return-home {
     font-family: var(--font-family);
-    font-size: clamp(1.8rem, min(6vw, 6vh), 3.75rem);
+    font-size: clamp(1.4rem, min(6vw, 4.6vh), 3.75rem);
     color: var(--primary-color);
     text-decoration: none;
 }
 
 .address {
     font-family: var(--font-family);
-    font-size: clamp(1.05rem, min(3.75vw, 3.5vh), 3rem);
+    font-size: clamp(0.8rem, min(3.75vw, 2.4vh), 3rem);
     color: var(--primary-color);
     text-decoration: none;
 }
 
 .phone-number {
     font-family: var(--font-family);
-    font-size: clamp(1.05rem, min(3.75vw, 3.5vh), 3rem);
+    font-size: clamp(0.8rem, min(3.75vw, 2.4vh), 3rem);
     color: var(--primary-color);
     text-decoration: none;
 }
@@ -78,7 +81,7 @@ header {
     font-family: var(--font-family);
     background-color: var(--primary-dark-color);
     color: var(--primary-color);
-    padding: clamp(0.375rem, 1.25vh, 0.625rem);
+    padding: clamp(0.25rem, 1vh, 0.625rem);
     margin: 0.5vh auto;
     width: var(--width-boxes);
     border-radius: 1rem;
@@ -86,15 +89,21 @@ header {
 }
 
 h1 {
-    font-size: clamp(1.8rem, min(6vw, 6vh), 3rem);
+    font-size: clamp(1.4rem, min(6vw, 4.6vh), 3rem);
+    line-height: 1.15;
     color: var(--primary-color);
-    margin-bottom: 0.5vh;
+    margin-bottom: 0.3vh;
 }
 
 h2 {
     color: var(--primary-color);
-    padding: clamp(0.3rem, 0.75vh, 0.75rem);
+    padding: clamp(0.1rem, 0.4vh, 0.5rem);
     margin: 0;
+}
+
+header h2 {
+    font-size: clamp(0.8rem, min(3.75vw, 2.4vh), 3rem);
+    line-height: 1.15;
 }
 
 /* Button grid: takes whatever height is left between header and footer.
